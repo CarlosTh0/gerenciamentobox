@@ -4,6 +4,8 @@ import FileUploader from "@/components/FileUploader";
 import StatsCards from "@/components/StatsCards";
 import CargasTable from "@/components/CargasTable";
 import { toast } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
+import { PlusCircle, AlertTriangle } from "lucide-react";
 
 const Index = () => {
   const [data, setData] = useState<any[]>([]);
@@ -42,35 +44,48 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-sm p-6">
-        {/* Uploader de arquivo */}
-        <div className="mb-6">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="space-y-8">
+          {/* Cabeçalho */}
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Dashboard de Agendamentos</h1>
+            <p className="text-gray-600">Gerencie todas as cargas e programações em um único lugar</p>
+          </div>
+          
+          {/* Uploader de arquivo */}
           <FileUploader onUpload={handleFileUpload} />
-        </div>
 
-        {/* Cards de estatísticas */}
-        <StatsCards stats={stats} />
+          {/* Cards de estatísticas */}
+          <StatsCards stats={stats} />
 
-        {/* Título */}
-        <h2 className="text-2xl font-bold text-gray-800 my-6 text-center">Agendamentos de Cargas</h2>
+          {/* Área de mensagens */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+            <div className="text-amber-500 mt-0.5">
+              <AlertTriangle size={18} />
+            </div>
+            <div>
+              <h3 className="font-medium text-amber-800">Atenção</h3>
+              <p className="text-amber-700 text-sm">
+                Verifique se todas as informações estão corretas antes de finalizar os agendamentos.
+              </p>
+            </div>
+          </div>
 
-        {/* Área de mensagens */}
-        <div className="bg-yellow-100 border border-yellow-200 p-4 rounded-md mb-6">
-          {/* Aqui iria lógica de mensagens dinâmicas */}
-        </div>
+          {/* Título */}
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold text-gray-800">Agendamentos de Cargas</h2>
+            <Button 
+              onClick={handleAddCarga}
+              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600"
+            >
+              <PlusCircle size={16} />
+              Adicionar Carga
+            </Button>
+          </div>
 
-        {/* Tabela de cargas */}
-        <CargasTable data={data} />
-
-        {/* Botão adicionar */}
-        <div className="flex justify-center mt-6">
-          <button 
-            onClick={handleAddCarga}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
-          >
-            Adicionar Carga
-          </button>
+          {/* Tabela de cargas */}
+          <CargasTable data={data} />
         </div>
       </div>
     </div>
