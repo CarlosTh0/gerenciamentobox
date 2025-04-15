@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Check, AlertCircle, Truck, Box, Calendar, MapPin } from "lucide-react";
+import { Check, AlertCircle, Truck, Box, Calendar, MapPin, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { Button } from "@/components/ui/button";
 
 export interface CargaItem {
   id?: string;
@@ -19,9 +19,10 @@ interface CargasTableProps {
   data: CargaItem[];
   onUpdateCarga: (index: number, updatedCarga: CargaItem) => void;
   onCheckConflicts: () => void;
+  onDeleteCarga?: (index: number) => void;
 }
 
-const CargasTable = ({ data, onUpdateCarga, onCheckConflicts }: CargasTableProps) => {
+const CargasTable = ({ data, onUpdateCarga, onCheckConflicts, onDeleteCarga }: CargasTableProps) => {
   return (
     <Card className="overflow-hidden border border-gray-100 rounded-lg shadow-sm">
       <div className="overflow-x-auto">
@@ -34,6 +35,7 @@ const CargasTable = ({ data, onUpdateCarga, onCheckConflicts }: CargasTableProps
               <TableHeader icon={<Box className="h-4 w-4" />}>PREBOX</TableHeader>
               <TableHeader icon={<MapPin className="h-4 w-4" />}>BOX-D</TableHeader>
               <TableHeader icon={<Check className="h-4 w-4" />}>STATUS</TableHeader>
+              <TableHeader>AÇÕES</TableHeader>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -45,11 +47,12 @@ const CargasTable = ({ data, onUpdateCarga, onCheckConflicts }: CargasTableProps
                   index={index} 
                   onUpdateCarga={onUpdateCarga}
                   onCheckConflicts={onCheckConflicts}
+                  onDeleteCarga={onDeleteCarga}
                 />
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-gray-500">
+                <td colSpan={7} className="text-center py-8 text-gray-500">
                   Nenhum dado disponível. Carregue uma planilha ou adicione uma nova carga.
                 </td>
               </tr>
@@ -74,24 +77,24 @@ const TableRow = ({
   row, 
   index,
   onUpdateCarga,
-  onCheckConflicts
+  onCheckConflicts,
+  onDeleteCarga
 }: { 
   row: CargaItem; 
   index: number;
   onUpdateCarga: (index: number, updatedCarga: CargaItem) => void;
   onCheckConflicts: () => void;
+  onDeleteCarga?: (index: number) => void;
 }) => {
   const [status, setStatus] = useState<"LIVRE" | "COMPLETO" | "JA_FOI">(row.status || "LIVRE");
   const [boxD, setBoxD] = useState(row["BOX-D"] || "");
   
-  // Validar número do BOX-D
   const validateBoxD = (value: string) => {
     const boxDNumber = parseInt(value);
     if (value === "") return true;
     return !isNaN(boxDNumber) && boxDNumber >= 1 && boxDNumber <= 32;
   };
 
-  // Validar número do PREBOX
   const validatePrebox = (value: string) => {
     const preboxNumber = parseInt(value);
     if (value === "") return true;
@@ -142,6 +145,15 @@ const TableRow = ({
   const handleStatusChange = (newStatus: "LIVRE" | "COMPLETO" | "JA_FOI") => {
     setStatus(newStatus);
     handleInputChange("status", newStatus);
+  };
+  
+  const handleDelete = () => {
+    if (onDeleteCarga) {
+      if (window.confirm("Tem certeza que deseja excluir esta carga?")) {
+        onDeleteCarga(index);
+        toast.success("Carga excluída com sucesso");
+      }
+    }
   };
   
   const getStatusStyles = (status: string) => {
@@ -232,6 +244,16 @@ const TableRow = ({
             {getStatusIcon(status)}
           </div>
         </div>
+      </td>
+      <td className="px-6 py-4">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+          onClick={handleDelete}
+        >
+          <Trash2 size={18} />
+        </Button>
       </td>
     </tr>
   );

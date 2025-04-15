@@ -116,6 +116,13 @@ const Index = () => {
     setData(newData);
   };
   
+  // Nova função para deletar uma carga
+  const handleDeleteCarga = (index: number) => {
+    const newData = [...data];
+    newData.splice(index, 1);
+    setData(newData);
+  };
+  
   // Simula uma sincronização dos dados
   const handleSync = () => {
     toast.success("Sincronizando dados...", {
@@ -202,6 +209,7 @@ const Index = () => {
             data={data} 
             onUpdateCarga={handleUpdateCarga} 
             onCheckConflicts={checkConflicts}
+            onDeleteCarga={handleDeleteCarga}
           />
           
           {/* Informações sobre o projeto */}
