@@ -2,17 +2,52 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUp, Upload } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
+import * as XLSX from 'xlsx';
 
 interface FileUploaderProps {
-  onUpload: () => void;
+  onUpload: (data: any[]) => void;
 }
 
 const FileUploader = ({ onUpload }: FileUploaderProps) => {
   const [fileName, setFileName] = useState("Nenhum arquivo escolhido");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const processExcelFile = (file: File) => {
+    setIsLoading(true);
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const parsedData = XLSX.utils.sheet_to_json(sheet);
+        
+        onUpload(parsedData);
+        toast.success("Planilha carregada com sucesso!");
+      } catch (error) {
+        console.error("Erro ao processar o arquivo:", error);
+        toast.error("Erro ao processar o arquivo. Verifique o formato.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    reader.onerror = () => {
+      toast.error("Erro ao ler o arquivo");
+      setIsLoading(false);
+    };
+    
+    reader.readAsBinaryString(file);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFileName(e.target.files[0].name);
+      const file = e.target.files[0];
+      setFileName(file.name);
+      processExcelFile(file);
     }
   };
 
@@ -29,6 +64,7 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
                 onChange={handleFileChange}
                 accept=".xlsx,.xls,.csv"
+                disabled={isLoading}
               />
             </label>
           </div>
@@ -36,11 +72,12 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
         </div>
         
         <Button
-          onClick={onUpload}
+          onClick={() => toast.info("Utilize o botão 'Escolher arquivo' para carregar uma planilha")}
           className="w-full sm:w-auto flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
+          disabled={isLoading}
         >
           <Upload size={16} />
-          Carregar Excel
+          {isLoading ? "Processando..." : "Carregar Excel"}
         </Button>
       </div>
     </div>
