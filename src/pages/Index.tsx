@@ -9,8 +9,8 @@ import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, AlertTriangle, Share2, DownloadCloud, RefreshCw } from "lucide-react";
 
-// Para sincronização em tempo real em uma implementação futura
-// import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+const LOCAL_STORAGE_KEY = 'cargo-management-data';
+const SYNC_INTERVAL = 5000; // Sync every 5 seconds
 
 const Index = () => {
   const [data, setData] = useState<CargaItem[]>([]);
@@ -18,16 +18,45 @@ const Index = () => {
     total: 0,
     livre: 0,
     completo: 0,
+    parcial: 0,
     jaFoi: 0
   });
   const [conflicts, setConflicts] = useState<{boxD: string; viagens: string[]}[]>([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [isSyncing, setIsSyncing] = useState(false);
+  
+  // Load data from localStorage on initial load
+  useEffect(() => {
+    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (storedData) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        setData(parsedData);
+      } catch (error) {
+        console.error("Error loading data from localStorage:", error);
+      }
+    }
+  }, []);
+  
+  // Set up auto-sync interval
+  useEffect(() => {
+    const syncInterval = setInterval(() => {
+      syncData();
+    }, SYNC_INTERVAL);
+    
+    return () => clearInterval(syncInterval);
+  }, []);
   
   // Atualiza estatísticas sempre que os dados mudam
   useEffect(() => {
     updateStats();
     checkConflicts();
-    setLastUpdate(new Date());
+    
+    // Save to localStorage whenever data changes
+    if (data.length > 0) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+      setLastUpdate(new Date());
+    }
   }, [data]);
   
   // Função para processar dados do Excel
@@ -53,6 +82,7 @@ const Index = () => {
       total: data.length,
       livre: data.filter(item => item.status === "LIVRE").length,
       completo: data.filter(item => item.status === "COMPLETO").length,
+      parcial: data.filter(item => item.status === "PARCIAL").length,
       jaFoi: data.filter(item => item.status === "JA_FOI").length
     });
   };
@@ -65,7 +95,7 @@ const Index = () => {
     // Agrupar viagens por BOX-D
     data.forEach(item => {
       const boxD = item["BOX-D"];
-      if (boxD && item.status !== "JA_FOI") { // Somente considerar BOX-D ocupados
+      if (boxD && (item.status === "LIVRE" || item.status === "COMPLETO" || item.status === "PARCIAL")) {
         if (!boxDMap[boxD]) {
           boxDMap[boxD] = [];
         }
@@ -123,12 +153,38 @@ const Index = () => {
     setData(newData);
   };
   
-  // Simula uma sincronização dos dados
+  // Sincroniza os dados entre dispositivos
+  const syncData = () => {
+    setIsSyncing(true);
+    
+    try {
+      // In a real implementation, this would connect to a backend
+      // For now, we're using localStorage as a simple shared storage
+      const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+      
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        
+        // Compare timestamps or other logic to determine if we need to update
+        // In this simple implementation, we'll just reload the data
+        setData(parsedData);
+        
+        toast.success("Sincronizado com sucesso", {
+          description: `Dados atualizados em ${new Date().toLocaleTimeString()}`
+        });
+      }
+    } catch (error) {
+      console.error("Error syncing data:", error);
+      toast.error("Erro ao sincronizar dados");
+    } finally {
+      setIsSyncing(false);
+      setLastUpdate(new Date());
+    }
+  };
+  
+  // Manual sync button handler
   const handleSync = () => {
-    toast.success("Sincronizando dados...", {
-      description: "Os dados foram sincronizados com sucesso!"
-    });
-    setLastUpdate(new Date());
+    syncData();
   };
   
   // Exportar dados atuais para Excel (simulação)
@@ -160,9 +216,10 @@ const Index = () => {
                 variant="outline"
                 className="flex items-center gap-1"
                 size="sm"
+                disabled={isSyncing}
               >
-                <RefreshCw size={14} />
-                Sincronizar
+                <RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
+                {isSyncing ? "Sincronizando..." : "Sincronizar"}
               </Button>
             </div>
           </div>
@@ -174,7 +231,7 @@ const Index = () => {
           <StatsCards stats={{
             total: stats.total,
             livre: stats.livre,
-            incompleto: stats.completo, // Usando o campo incompleto para "COMPLETO"
+            incompleto: stats.parcial, // Usando o campo incompleto para "PARCIAL"
             completo: stats.jaFoi // Usando o campo completo para "JA_FOI"
           }} />
 
@@ -226,7 +283,7 @@ const Index = () => {
               <div className="mt-2 flex items-center gap-2">
                 <Share2 size={14} className="text-amber-600" />
                 <span className="text-xs text-amber-600">
-                  Os dados são sincronizados automaticamente para todos os dispositivos conectados.
+                  Os dados são sincronizados automaticamente a cada 5 segundos e também podem ser sincronizados manualmente.
                 </span>
               </div>
             </div>

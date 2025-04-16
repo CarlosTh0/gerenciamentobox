@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Check, AlertCircle, Truck, Box, Calendar, MapPin, Trash2 } from "lucide-react";
+import { Check, AlertCircle, Truck, Box, Calendar, MapPin, Trash2, Clock } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 
@@ -11,7 +12,7 @@ export interface CargaItem {
   FROTA: string;
   PREBOX: string;
   "BOX-D": string;
-  status: "LIVRE" | "COMPLETO" | "JA_FOI";
+  status: "LIVRE" | "COMPLETO" | "PARCIAL" | "JA_FOI";
   [key: string]: any;
 }
 
@@ -29,7 +30,7 @@ const CargasTable = ({ data, onUpdateCarga, onCheckConflicts, onDeleteCarga }: C
         <table className="w-full">
           <thead>
             <tr className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
-              <TableHeader icon={<Calendar className="h-4 w-4" />}>HORA</TableHeader>
+              <TableHeader icon={<Clock className="h-4 w-4" />}>HORA</TableHeader>
               <TableHeader icon={<Truck className="h-4 w-4" />}>VIAGEM</TableHeader>
               <TableHeader icon={<Truck className="h-4 w-4" />}>FROTA</TableHeader>
               <TableHeader icon={<Box className="h-4 w-4" />}>PREBOX</TableHeader>
@@ -86,8 +87,10 @@ const TableRow = ({
   onCheckConflicts: () => void;
   onDeleteCarga?: (index: number) => void;
 }) => {
-  const [status, setStatus] = useState<"LIVRE" | "COMPLETO" | "JA_FOI">(row.status || "LIVRE");
+  const [status, setStatus] = useState<"LIVRE" | "COMPLETO" | "PARCIAL" | "JA_FOI">(row.status || "LIVRE");
   const [boxD, setBoxD] = useState(row["BOX-D"] || "");
+  const [hora, setHora] = useState(row.HORA || "");
+  const [prebox, setPrebox] = useState(row.PREBOX || "");
   
   const validateBoxD = (value: string) => {
     const boxDNumber = parseInt(value);
@@ -96,10 +99,14 @@ const TableRow = ({
   };
 
   const validatePrebox = (value: string) => {
-    const preboxNumber = parseInt(value);
     if (value === "") return true;
     
-    return !isNaN(preboxNumber) && (
+    // First check if it's a number
+    const preboxNumber = parseInt(value);
+    if (isNaN(preboxNumber)) return false;
+    
+    // Then check if it's in the valid ranges
+    return (
       (preboxNumber >= 300 && preboxNumber <= 356) || 
       (preboxNumber >= 50 && preboxNumber <= 56)
     );
@@ -139,10 +146,32 @@ const TableRow = ({
       return;
     }
     
+    setPrebox(value);
     handleInputChange("PREBOX", value);
   };
 
-  const handleStatusChange = (newStatus: "LIVRE" | "COMPLETO" | "JA_FOI") => {
+  const handleHoraChange = (value: string) => {
+    // Format as HH:MM
+    if (value) {
+      // Remove non-digits
+      const digitsOnly = value.replace(/[^\d]/g, '');
+      
+      // Format with colon
+      if (digitsOnly.length <= 2) {
+        setHora(digitsOnly);
+      } else {
+        const hours = digitsOnly.substring(0, 2);
+        const minutes = digitsOnly.substring(2, 4);
+        setHora(`${hours}:${minutes}`);
+      }
+    } else {
+      setHora('');
+    }
+    
+    handleInputChange("HORA", value);
+  };
+
+  const handleStatusChange = (newStatus: "LIVRE" | "COMPLETO" | "PARCIAL" | "JA_FOI") => {
     setStatus(newStatus);
     handleInputChange("status", newStatus);
   };
@@ -162,6 +191,8 @@ const TableRow = ({
         return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "COMPLETO":
         return "bg-blue-50 text-blue-700 border-blue-200";
+      case "PARCIAL":
+        return "bg-purple-50 text-purple-700 border-purple-200";
       case "JA_FOI":
         return "bg-amber-50 text-amber-700 border-amber-200";
       default:
@@ -175,6 +206,8 @@ const TableRow = ({
         return <Check className="w-4 h-4 text-emerald-500" />;
       case "COMPLETO":
         return <Check className="w-4 h-4 text-blue-500" />;
+      case "PARCIAL":
+        return <AlertCircle className="w-4 h-4 text-purple-500" />;
       case "JA_FOI":
         return <AlertCircle className="w-4 h-4 text-amber-500" />;
       default:
@@ -188,9 +221,9 @@ const TableRow = ({
         <input 
           type="text" 
           className="w-full border border-gray-200 px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
-          placeholder="08:00" 
-          value={row.HORA || ""}
-          onChange={(e) => handleInputChange("HORA", e.target.value)}
+          placeholder="00:00" 
+          value={hora}
+          onChange={(e) => handleHoraChange(e.target.value)}
         />
       </td>
       <td className="px-6 py-4">
@@ -214,9 +247,9 @@ const TableRow = ({
       <td className="px-6 py-4">
         <input 
           type="text" 
-          className="w-full border border-gray-200 px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow" 
+          className={`w-full border ${prebox && !validatePrebox(prebox) ? 'border-red-400' : 'border-gray-200'} px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow`} 
           placeholder="300-356 ou 50-56" 
-          value={row.PREBOX || ""}
+          value={prebox}
           onChange={(e) => handlePreboxChange(e.target.value)}
         />
       </td>
@@ -234,9 +267,10 @@ const TableRow = ({
           <select
             className={`appearance-none w-full pl-3 pr-8 py-1.5 rounded text-sm border ${getStatusStyles(status)} focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow`}
             value={status}
-            onChange={(e) => handleStatusChange(e.target.value as "LIVRE" | "COMPLETO" | "JA_FOI")}
+            onChange={(e) => handleStatusChange(e.target.value as "LIVRE" | "COMPLETO" | "PARCIAL" | "JA_FOI")}
           >
             <option value="LIVRE">LIVRE</option>
+            <option value="PARCIAL">PARCIAL</option>
             <option value="COMPLETO">COMPLETO</option>
             <option value="JA_FOI">JA FOI</option>
           </select>
