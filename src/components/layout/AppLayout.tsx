@@ -14,9 +14,10 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarRail,
-  SidebarInset
+  SidebarInset,
+  SidebarTrigger
 } from "@/components/ui/sidebar";
-import { Sun, Moon, LayoutDashboard, Truck, RefreshCw } from "lucide-react";
+import { Sun, Moon, LayoutDashboard, Truck, RefreshCw, PanelLeftClose, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
 
@@ -25,6 +26,7 @@ export default function AppLayout() {
   const location = useLocation();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -32,6 +34,12 @@ export default function AppLayout() {
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+
+    // Recuperar o estado da barra lateral do localStorage
+    const savedSidebarState = localStorage.getItem('sidebar-visible');
+    if (savedSidebarState) {
+      setSidebarVisible(savedSidebarState === 'true');
+    }
 
     return () => {
       window.removeEventListener('online', handleOnline);
@@ -50,8 +58,14 @@ export default function AppLayout() {
     }
   };
 
+  const toggleSidebar = () => {
+    const newState = !sidebarVisible;
+    setSidebarVisible(newState);
+    localStorage.setItem('sidebar-visible', String(newState));
+  };
+
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={sidebarVisible} open={sidebarVisible} onOpenChange={setSidebarVisible}>
       <div className={`min-h-screen flex w-full ${theme === 'dark' ? 'dark' : ''}`}>
         <Sidebar>
           <SidebarHeader className="flex h-14 items-center border-b px-6">
@@ -118,7 +132,18 @@ export default function AppLayout() {
           <SidebarRail />
         </Sidebar>
         <SidebarInset>
-          <Outlet />
+          <div className="p-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={toggleSidebar}
+              className="mb-4"
+            >
+              {sidebarVisible ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
+              <span className="ml-2">{sidebarVisible ? 'Esconder Menu' : 'Mostrar Menu'}</span>
+            </Button>
+            <Outlet />
+          </div>
         </SidebarInset>
       </div>
     </SidebarProvider>

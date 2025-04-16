@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CargaItem } from "@/components/CargasTable";
@@ -88,7 +89,7 @@ const Dashboard = () => {
   const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold mb-2">Dashboard de Estatísticas</h1>
         <p className="text-muted-foreground">
