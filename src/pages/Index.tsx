@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import FileUploader from "@/components/FileUploader";
@@ -75,10 +76,10 @@ const Index = () => {
     
     if (searchTerm) {
       result = result.filter(item => 
-        item.VIAGEM.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.FROTA.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.PREBOX.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item["BOX-D"].toLowerCase().includes(searchTerm.toLowerCase())
+        (String(item.VIAGEM || "")).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (String(item.FROTA || "")).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (String(item.PREBOX || "")).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (String(item["BOX-D"] || "")).toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
@@ -90,12 +91,13 @@ const Index = () => {
       let valueA = a[sortField as keyof CargaItem];
       let valueB = b[sortField as keyof CargaItem];
       
+      // Convert to string to ensure we can compare
       const stringA = String(valueA || "");
       const stringB = String(valueB || "");
       
       if (sortField === "HORA") {
-        const formattedA = stringA.replace(":", "") || "";
-        const formattedB = stringB.replace(":", "") || "";
+        const formattedA = stringA.replace ? stringA.replace(":", "") : stringA || "";
+        const formattedB = stringB.replace ? stringB.replace(":", "") : stringB || "";
         
         if (formattedA < formattedB) {
           return sortDirection === "asc" ? -1 : 1;
