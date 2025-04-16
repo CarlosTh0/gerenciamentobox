@@ -7,13 +7,22 @@ import CargasTable, { CargaItem } from "@/components/CargasTable";
 import ConflictAlert from "@/components/ConflictAlert";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, AlertTriangle, Share2, DownloadCloud, RefreshCw } from "lucide-react";
+import { PlusCircle, AlertTriangle, DownloadCloud, RefreshCw, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 const LOCAL_STORAGE_KEY = 'cargo-management-data';
 const SYNC_INTERVAL = 5000; // Sync every 5 seconds
 
 const Index = () => {
   const [data, setData] = useState<CargaItem[]>([]);
+  const [filteredData, setFilteredData] = useState<CargaItem[]>([]);
   const [stats, setStats] = useState({
     total: 0,
     livre: 0,
@@ -24,6 +33,12 @@ const Index = () => {
   const [conflicts, setConflicts] = useState<{boxD: string; viagens: string[]}[]>([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [isSyncing, setIsSyncing] = useState(false);
+  
+  // Filtros
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("TODOS");
+  const [sortField, setSortField] = useState<string>("HORA");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   
   // Load data from localStorage on initial load
   useEffect(() => {
@@ -57,7 +72,62 @@ const Index = () => {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
       setLastUpdate(new Date());
     }
-  }, [data]);
+    
+    // Apply filters
+    applyFilters();
+  }, [data, searchTerm, statusFilter, sortField, sortDirection]);
+  
+  // Aplicar filtros e ordenação
+  const applyFilters = () => {
+    let result = [...data];
+    
+    // Apply search filter
+    if (searchTerm) {
+      result = result.filter(item => 
+        item.VIAGEM.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.FROTA.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.PREBOX.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item["BOX-D"].toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply status filter
+    if (statusFilter !== "TODOS") {
+      result = result.filter(item => item.status === statusFilter);
+    }
+    
+    // Apply sorting
+    result.sort((a, b) => {
+      let valueA = a[sortField as keyof CargaItem];
+      let valueB = b[sortField as keyof CargaItem];
+      
+      // Special handling for time
+      if (sortField === "HORA") {
+        valueA = valueA ? valueA.replace(":", "") : "";
+        valueB = valueB ? valueB.replace(":", "") : "";
+      }
+      
+      if (valueA < valueB) {
+        return sortDirection === "asc" ? -1 : 1;
+      }
+      if (valueA > valueB) {
+        return sortDirection === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+    
+    setFilteredData(result);
+  };
+  
+  // Toggle sort direction
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
   
   // Função para processar dados do Excel
   const handleFileUpload = (excelData: any[]) => {
@@ -141,16 +211,22 @@ const Index = () => {
   };
   
   const handleUpdateCarga = (index: number, updatedCarga: CargaItem) => {
-    const newData = [...data];
-    newData[index] = updatedCarga;
-    setData(newData);
+    const dataIndex = data.findIndex(item => item.id === filteredData[index].id);
+    if (dataIndex !== -1) {
+      const newData = [...data];
+      newData[dataIndex] = updatedCarga;
+      setData(newData);
+    }
   };
   
   // Nova função para deletar uma carga
   const handleDeleteCarga = (index: number) => {
-    const newData = [...data];
-    newData.splice(index, 1);
-    setData(newData);
+    const dataIndex = data.findIndex(item => item.id === filteredData[index].id);
+    if (dataIndex !== -1) {
+      const newData = [...data];
+      newData.splice(dataIndex, 1);
+      setData(newData);
+    }
   };
   
   // Sincroniza os dados entre dispositivos
@@ -195,20 +271,20 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="space-y-8">
+    <div className="h-full bg-background">
+      <div className="max-w-full px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-6">
           {/* Cabeçalho */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Sistema de Gerenciamento de Cargas</h1>
-              <p className="text-gray-600">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Sistema de Gerenciamento de Cargas</h1>
+              <p className="text-muted-foreground">
                 Controle logístico de frota e agendamentos de viagens
               </p>
             </div>
             
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 Última atualização: {lastUpdate.toLocaleTimeString()}
               </span>
               <Button 
@@ -231,17 +307,69 @@ const Index = () => {
           <StatsCards stats={{
             total: stats.total,
             livre: stats.livre,
-            incompleto: stats.parcial, // Usando o campo incompleto para "PARCIAL"
-            completo: stats.jaFoi // Usando o campo completo para "JA_FOI"
+            incompleto: stats.parcial,
+            completo: stats.completo + stats.jaFoi
           }} />
 
           {/* Área de alertas de conflito */}
           <ConflictAlert conflicts={conflicts} />
 
-          {/* Ações da tabela */}
-          <div className="flex flex-wrap justify-between items-center gap-4">
-            <h2 className="text-xl font-semibold text-gray-800">Agendamentos de Cargas</h2>
-            <div className="flex items-center gap-2">
+          {/* Filtros e ordenação */}
+          <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar viagem, frota, box..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              
+              <Select
+                value={statusFilter}
+                onValueChange={setStatusFilter}
+              >
+                <SelectTrigger className="w-full sm:w-36">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TODOS">Todos</SelectItem>
+                  <SelectItem value="LIVRE">Livre</SelectItem>
+                  <SelectItem value="PARCIAL">Parcial</SelectItem>
+                  <SelectItem value="COMPLETO">Completo</SelectItem>
+                  <SelectItem value="JA_FOI">Já Foi</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select
+                value={sortField}
+                onValueChange={setSortField}
+              >
+                <SelectTrigger className="w-full sm:w-36">
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="HORA">Hora</SelectItem>
+                  <SelectItem value="VIAGEM">Viagem</SelectItem>
+                  <SelectItem value="FROTA">Frota</SelectItem>
+                  <SelectItem value="PREBOX">Prebox</SelectItem>
+                  <SelectItem value="BOX-D">Box-D</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
+              >
+                {sortDirection === "asc" ? "↑" : "↓"}
+              </Button>
+            </div>
+            
+            <div className="flex items-center gap-2 w-full md:w-auto justify-end">
               <Button 
                 onClick={handleExportToExcel}
                 variant="outline"
@@ -263,28 +391,35 @@ const Index = () => {
 
           {/* Tabela de cargas */}
           <CargasTable 
-            data={data} 
+            data={filteredData} 
             onUpdateCarga={handleUpdateCarga} 
             onCheckConflicts={checkConflicts}
             onDeleteCarga={handleDeleteCarga}
+            onSort={handleSort}
+            sortField={sortField}
+            sortDirection={sortDirection}
           />
           
           {/* Informações sobre o projeto */}
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3 mt-8">
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-lg p-4 flex items-start gap-3 mt-8">
             <div className="text-amber-500 mt-0.5">
               <AlertTriangle size={18} />
             </div>
             <div>
-              <h3 className="font-medium text-amber-800">Informações do Sistema</h3>
-              <p className="text-amber-700 text-sm">
+              <h3 className="font-medium text-amber-800 dark:text-amber-300">Informações do Sistema</h3>
+              <p className="text-amber-700 dark:text-amber-400 text-sm">
                 Este sistema permite o gerenciamento de cargas e agendamentos, com verificação de conflitos 
                 de BOX-D e validação dos números de PREBOX (300-356 ou 50-56) e BOX-D (1-32).
               </p>
-              <div className="mt-2 flex items-center gap-2">
-                <Share2 size={14} className="text-amber-600" />
-                <span className="text-xs text-amber-600">
-                  Os dados são sincronizados automaticamente a cada 5 segundos e também podem ser sincronizados manualmente.
-                </span>
+              <div className="mt-2 flex gap-2 text-xs text-amber-600 dark:text-amber-400">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
+                  <span>Online</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-amber-500 mr-1"></div>
+                  <span>Modo Offline Disponível</span>
+                </div>
               </div>
             </div>
           </div>

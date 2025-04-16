@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Check, AlertCircle, Truck, Box, Calendar, MapPin, Trash2, Clock } from "lucide-react";
+import { Check, AlertCircle, Truck, Box, Calendar, MapPin, Trash2, Clock, ArrowUpDown } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 
@@ -21,25 +21,90 @@ interface CargasTableProps {
   onUpdateCarga: (index: number, updatedCarga: CargaItem) => void;
   onCheckConflicts: () => void;
   onDeleteCarga?: (index: number) => void;
+  onSort?: (field: string) => void;
+  sortField?: string;
+  sortDirection?: "asc" | "desc";
 }
 
-const CargasTable = ({ data, onUpdateCarga, onCheckConflicts, onDeleteCarga }: CargasTableProps) => {
+const CargasTable = ({ 
+  data, 
+  onUpdateCarga, 
+  onCheckConflicts, 
+  onDeleteCarga,
+  onSort,
+  sortField,
+  sortDirection
+}: CargasTableProps) => {
   return (
-    <Card className="overflow-hidden border border-gray-100 rounded-lg shadow-sm">
+    <Card className="overflow-hidden border border-border rounded-lg shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
-              <TableHeader icon={<Clock className="h-4 w-4" />}>HORA</TableHeader>
-              <TableHeader icon={<Truck className="h-4 w-4" />}>VIAGEM</TableHeader>
-              <TableHeader icon={<Truck className="h-4 w-4" />}>FROTA</TableHeader>
-              <TableHeader icon={<Box className="h-4 w-4" />}>PREBOX</TableHeader>
-              <TableHeader icon={<MapPin className="h-4 w-4" />}>BOX-D</TableHeader>
-              <TableHeader icon={<Check className="h-4 w-4" />}>STATUS</TableHeader>
+            <tr className="bg-muted/50 border-b border-border">
+              <TableHeader 
+                icon={<Clock className="h-4 w-4" />} 
+                field="HORA"
+                sortable
+                currentSort={sortField}
+                sortDirection={sortDirection}
+                onSort={onSort}
+              >
+                HORA
+              </TableHeader>
+              <TableHeader 
+                icon={<Truck className="h-4 w-4" />}
+                field="VIAGEM"
+                sortable
+                currentSort={sortField}
+                sortDirection={sortDirection}
+                onSort={onSort}
+              >
+                VIAGEM
+              </TableHeader>
+              <TableHeader 
+                icon={<Truck className="h-4 w-4" />}
+                field="FROTA"
+                sortable
+                currentSort={sortField}
+                sortDirection={sortDirection}
+                onSort={onSort}
+              >
+                FROTA
+              </TableHeader>
+              <TableHeader 
+                icon={<Box className="h-4 w-4" />}
+                field="PREBOX"
+                sortable
+                currentSort={sortField}
+                sortDirection={sortDirection}
+                onSort={onSort}
+              >
+                PREBOX
+              </TableHeader>
+              <TableHeader 
+                icon={<MapPin className="h-4 w-4" />}
+                field="BOX-D"
+                sortable
+                currentSort={sortField}
+                sortDirection={sortDirection}
+                onSort={onSort}
+              >
+                BOX-D
+              </TableHeader>
+              <TableHeader 
+                icon={<Check className="h-4 w-4" />}
+                field="status"
+                sortable
+                currentSort={sortField}
+                sortDirection={sortDirection}
+                onSort={onSort}
+              >
+                STATUS
+              </TableHeader>
               <TableHeader>AÇÕES</TableHeader>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-border">
             {data.length > 0 ? (
               data.map((row, index) => (
                 <TableRow 
@@ -53,7 +118,7 @@ const CargasTable = ({ data, onUpdateCarga, onCheckConflicts, onDeleteCarga }: C
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-gray-500">
+                <td colSpan={7} className="text-center py-8 text-muted-foreground">
                   Nenhum dado disponível. Carregue uma planilha ou adicione uma nova carga.
                 </td>
               </tr>
@@ -65,14 +130,53 @@ const CargasTable = ({ data, onUpdateCarga, onCheckConflicts, onDeleteCarga }: C
   );
 };
 
-const TableHeader = ({ children, icon }: { children: React.ReactNode; icon?: React.ReactNode }) => (
-  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-    <div className="flex items-center gap-2">
-      {icon && <span className="text-blue-500">{icon}</span>}
-      {children}
-    </div>
-  </th>
-);
+interface TableHeaderProps {
+  children: React.ReactNode;
+  icon?: React.ReactNode;
+  field?: string;
+  sortable?: boolean;
+  currentSort?: string;
+  sortDirection?: "asc" | "desc";
+  onSort?: (field: string) => void;
+}
+
+const TableHeader = ({ 
+  children, 
+  icon, 
+  field,
+  sortable,
+  currentSort,
+  sortDirection,
+  onSort
+}: TableHeaderProps) => {
+  const isActive = field === currentSort;
+  
+  return (
+    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      {sortable && field ? (
+        <button 
+          className="flex items-center gap-2 hover:text-foreground focus:outline-none"
+          onClick={() => onSort && onSort(field)}
+        >
+          {icon && <span className="text-primary">{icon}</span>}
+          {children}
+          {isActive ? (
+            <span className="text-foreground">
+              {sortDirection === "asc" ? "↑" : "↓"}
+            </span>
+          ) : (
+            <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
+          )}
+        </button>
+      ) : (
+        <div className="flex items-center gap-2">
+          {icon && <span className="text-primary">{icon}</span>}
+          {children}
+        </div>
+      )}
+    </th>
+  );
+};
 
 const TableRow = ({ 
   row, 
@@ -120,6 +224,14 @@ const TableRow = ({
     }
   }, [status, row]);
 
+  useEffect(() => {
+    // Update local state when row props change
+    setStatus(row.status);
+    setBoxD(row["BOX-D"]);
+    setHora(row.HORA);
+    setPrebox(row.PREBOX);
+  }, [row]);
+
   const handleInputChange = (field: keyof CargaItem, value: string) => {
     const updatedCarga = { ...row, [field]: value };
     onUpdateCarga(index, updatedCarga);
@@ -139,15 +251,15 @@ const TableRow = ({
   };
 
   const handlePreboxChange = (value: string) => {
-    if (!validatePrebox(value) && value !== "") {
-      toast.error("Número de PREBOX inválido", {
-        description: "O PREBOX deve estar entre 300-356 ou 50-56"
-      });
-      return;
-    }
-    
     setPrebox(value);
     handleInputChange("PREBOX", value);
+    
+    // Validate after setting the value, but don't prevent input
+    if (!validatePrebox(value) && value !== "") {
+      toast.warning("Número de PREBOX recomendado: 300-356 ou 50-56", {
+        description: "Você pode continuar, mas o valor está fora do padrão."
+      });
+    }
   };
 
   const handleHoraChange = (value: string) => {
@@ -168,7 +280,7 @@ const TableRow = ({
       setHora('');
     }
     
-    handleInputChange("HORA", value);
+    handleInputChange("HORA", hora);
   };
 
   const handleStatusChange = (newStatus: "LIVRE" | "COMPLETO" | "PARCIAL" | "JA_FOI") => {
@@ -188,15 +300,15 @@ const TableRow = ({
   const getStatusStyles = (status: string) => {
     switch(status) {
       case "LIVRE":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+        return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800";
       case "COMPLETO":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800";
       case "PARCIAL":
-        return "bg-purple-50 text-purple-700 border-purple-200";
+        return "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800";
       case "JA_FOI":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-200";
+        return "bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800/50 dark:text-gray-300 dark:border-gray-700";
     }
   };
 
@@ -216,20 +328,21 @@ const TableRow = ({
   };
   
   return (
-    <tr className="hover:bg-gray-50 transition-colors">
+    <tr className="hover:bg-muted/30 transition-colors">
       <td className="px-6 py-4">
         <input 
           type="text" 
-          className="w-full border border-gray-200 px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
+          className="w-full border border-input px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-ring focus:border-ring outline-none transition-shadow bg-background"
           placeholder="00:00" 
           value={hora}
           onChange={(e) => handleHoraChange(e.target.value)}
+          onBlur={() => handleInputChange("HORA", hora)}
         />
       </td>
       <td className="px-6 py-4">
         <input 
           type="text" 
-          className="w-full border border-gray-200 px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow" 
+          className="w-full border border-input px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-ring focus:border-ring outline-none transition-shadow bg-background" 
           placeholder="V001" 
           value={row.VIAGEM || ""}
           onChange={(e) => handleInputChange("VIAGEM", e.target.value)}
@@ -238,7 +351,7 @@ const TableRow = ({
       <td className="px-6 py-4">
         <input 
           type="text" 
-          className="w-full border border-gray-200 px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow" 
+          className="w-full border border-input px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-ring focus:border-ring outline-none transition-shadow bg-background" 
           placeholder="F123" 
           value={row.FROTA || ""}
           onChange={(e) => handleInputChange("FROTA", e.target.value)}
@@ -247,7 +360,7 @@ const TableRow = ({
       <td className="px-6 py-4">
         <input 
           type="text" 
-          className={`w-full border ${prebox && !validatePrebox(prebox) ? 'border-red-400' : 'border-gray-200'} px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow`} 
+          className="w-full border border-input px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-ring focus:border-ring outline-none transition-shadow bg-background" 
           placeholder="300-356 ou 50-56" 
           value={prebox}
           onChange={(e) => handlePreboxChange(e.target.value)}
@@ -256,7 +369,7 @@ const TableRow = ({
       <td className="px-6 py-4">
         <input 
           type="text" 
-          className={`w-full border ${boxD && !validateBoxD(boxD) ? 'border-red-400' : 'border-gray-200'} px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow`}
+          className={`w-full border ${boxD && !validateBoxD(boxD) ? 'border-destructive' : 'border-input'} px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-ring focus:border-ring outline-none transition-shadow bg-background`}
           placeholder="1-32" 
           value={boxD}
           onChange={(e) => handleBoxDChange(e.target.value)}
@@ -265,7 +378,7 @@ const TableRow = ({
       <td className="px-6 py-4">
         <div className="relative">
           <select
-            className={`appearance-none w-full pl-3 pr-8 py-1.5 rounded text-sm border ${getStatusStyles(status)} focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow`}
+            className={`appearance-none w-full pl-3 pr-8 py-1.5 rounded text-sm border ${getStatusStyles(status)} focus:ring-2 focus:ring-ring focus:border-ring outline-none transition-shadow`}
             value={status}
             onChange={(e) => handleStatusChange(e.target.value as "LIVRE" | "COMPLETO" | "PARCIAL" | "JA_FOI")}
           >
@@ -283,7 +396,7 @@ const TableRow = ({
         <Button 
           variant="ghost" 
           size="sm" 
-          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
           onClick={handleDelete}
         >
           <Trash2 size={18} />
