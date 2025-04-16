@@ -90,21 +90,29 @@ const Index = () => {
       let valueA = a[sortField as keyof CargaItem];
       let valueB = b[sortField as keyof CargaItem];
       
-      if (sortField === "HORA") {
-        valueA = String(valueA || "").replace(":", "") || "";
-        valueB = String(valueB || "").replace(":", "") || "";
-      }
-      
       const stringA = String(valueA || "");
       const stringB = String(valueB || "");
       
-      if (stringA < stringB) {
-        return sortDirection === "asc" ? -1 : 1;
+      if (sortField === "HORA") {
+        const formattedA = stringA.replace(":", "") || "";
+        const formattedB = stringB.replace(":", "") || "";
+        
+        if (formattedA < formattedB) {
+          return sortDirection === "asc" ? -1 : 1;
+        }
+        if (formattedA > formattedB) {
+          return sortDirection === "asc" ? 1 : -1;
+        }
+        return 0;
+      } else {
+        if (stringA < stringB) {
+          return sortDirection === "asc" ? -1 : 1;
+        }
+        if (stringA > stringB) {
+          return sortDirection === "asc" ? 1 : -1;
+        }
+        return 0;
       }
-      if (stringA > stringB) {
-        return sortDirection === "asc" ? 1 : -1;
-      }
-      return 0;
     });
     
     setFilteredData(result);
