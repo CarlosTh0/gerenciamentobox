@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import FileUploader from "@/components/FileUploader";
@@ -34,13 +33,11 @@ const Index = () => {
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [isSyncing, setIsSyncing] = useState(false);
   
-  // Filtros
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("TODOS");
   const [sortField, setSortField] = useState<string>("HORA");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   
-  // Load data from localStorage on initial load
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedData) {
@@ -53,7 +50,6 @@ const Index = () => {
     }
   }, []);
   
-  // Set up auto-sync interval
   useEffect(() => {
     const syncInterval = setInterval(() => {
       syncData();
@@ -62,26 +58,21 @@ const Index = () => {
     return () => clearInterval(syncInterval);
   }, []);
   
-  // Atualiza estatísticas sempre que os dados mudam
   useEffect(() => {
     updateStats();
     checkConflicts();
     
-    // Save to localStorage whenever data changes
     if (data.length > 0) {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
       setLastUpdate(new Date());
     }
     
-    // Apply filters
     applyFilters();
   }, [data, searchTerm, statusFilter, sortField, sortDirection]);
   
-  // Aplicar filtros e ordenação
   const applyFilters = () => {
     let result = [...data];
     
-    // Apply search filter
     if (searchTerm) {
       result = result.filter(item => 
         item.VIAGEM.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -91,26 +82,26 @@ const Index = () => {
       );
     }
     
-    // Apply status filter
     if (statusFilter !== "TODOS") {
       result = result.filter(item => item.status === statusFilter);
     }
     
-    // Apply sorting
     result.sort((a, b) => {
       let valueA = a[sortField as keyof CargaItem];
       let valueB = b[sortField as keyof CargaItem];
       
-      // Special handling for time
       if (sortField === "HORA") {
-        valueA = valueA ? valueA.replace(":", "") : "";
-        valueB = valueB ? valueB.replace(":", "") : "";
+        valueA = String(valueA || "").replace(":", "") || "";
+        valueB = String(valueB || "").replace(":", "") || "";
       }
       
-      if (valueA < valueB) {
+      const stringA = String(valueA || "");
+      const stringB = String(valueB || "");
+      
+      if (stringA < stringB) {
         return sortDirection === "asc" ? -1 : 1;
       }
-      if (valueA > valueB) {
+      if (stringA > stringB) {
         return sortDirection === "asc" ? 1 : -1;
       }
       return 0;
@@ -119,7 +110,6 @@ const Index = () => {
     setFilteredData(result);
   };
   
-  // Toggle sort direction
   const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -129,7 +119,6 @@ const Index = () => {
     }
   };
   
-  // Função para processar dados do Excel
   const handleFileUpload = (excelData: any[]) => {
     const processedData = excelData.map(row => {
       return {
@@ -146,7 +135,6 @@ const Index = () => {
     setData(processedData);
   };
 
-  // Atualizar estatísticas
   const updateStats = () => {
     setStats({
       total: data.length,
@@ -157,12 +145,10 @@ const Index = () => {
     });
   };
   
-  // Verificar conflitos de BOX-D
   const checkConflicts = () => {
     const boxDMap: Record<string, string[]> = {};
     const newConflicts: {boxD: string; viagens: string[]}[] = [];
     
-    // Agrupar viagens por BOX-D
     data.forEach(item => {
       const boxD = item["BOX-D"];
       if (boxD && (item.status === "LIVRE" || item.status === "COMPLETO" || item.status === "PARCIAL")) {
@@ -175,7 +161,6 @@ const Index = () => {
       }
     });
     
-    // Verificar conflitos (mais de uma viagem no mesmo BOX-D)
     Object.keys(boxDMap).forEach(boxD => {
       if (boxDMap[boxD].length > 1) {
         newConflicts.push({
@@ -187,7 +172,6 @@ const Index = () => {
     
     setConflicts(newConflicts);
     
-    // Notificar sobre novos conflitos
     if (newConflicts.length > 0 && newConflicts.length !== conflicts.length) {
       toast.warning(`${newConflicts.length} conflitos detectados!`, {
         description: "Verifique os detalhes na área de alertas."
@@ -219,7 +203,6 @@ const Index = () => {
     }
   };
   
-  // Nova função para deletar uma carga
   const handleDeleteCarga = (index: number) => {
     const dataIndex = data.findIndex(item => item.id === filteredData[index].id);
     if (dataIndex !== -1) {
@@ -229,20 +212,15 @@ const Index = () => {
     }
   };
   
-  // Sincroniza os dados entre dispositivos
   const syncData = () => {
     setIsSyncing(true);
     
     try {
-      // In a real implementation, this would connect to a backend
-      // For now, we're using localStorage as a simple shared storage
       const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
       
       if (storedData) {
         const parsedData = JSON.parse(storedData);
         
-        // Compare timestamps or other logic to determine if we need to update
-        // In this simple implementation, we'll just reload the data
         setData(parsedData);
         
         toast.success("Sincronizado com sucesso", {
@@ -258,12 +236,10 @@ const Index = () => {
     }
   };
   
-  // Manual sync button handler
   const handleSync = () => {
     syncData();
   };
   
-  // Exportar dados atuais para Excel (simulação)
   const handleExportToExcel = () => {
     toast.success("Exportando dados...", {
       description: "Os dados foram exportados para Excel com sucesso!"
@@ -274,7 +250,6 @@ const Index = () => {
     <div className="h-full bg-background">
       <div className="max-w-full px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
-          {/* Cabeçalho */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold mb-2">Sistema de Gerenciamento de Cargas</h1>
@@ -300,10 +275,8 @@ const Index = () => {
             </div>
           </div>
           
-          {/* Uploader de arquivo */}
           <FileUploader onUpload={handleFileUpload} />
 
-          {/* Cards de estatísticas */}
           <StatsCards stats={{
             total: stats.total,
             livre: stats.livre,
@@ -311,10 +284,8 @@ const Index = () => {
             completo: stats.completo + stats.jaFoi
           }} />
 
-          {/* Área de alertas de conflito */}
           <ConflictAlert conflicts={conflicts} />
 
-          {/* Filtros e ordenação */}
           <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <div className="relative w-full sm:w-72">
@@ -389,7 +360,6 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Tabela de cargas */}
           <CargasTable 
             data={filteredData} 
             onUpdateCarga={handleUpdateCarga} 
@@ -400,7 +370,6 @@ const Index = () => {
             sortDirection={sortDirection}
           />
           
-          {/* Informações sobre o projeto */}
           <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-lg p-4 flex items-start gap-3 mt-8">
             <div className="text-amber-500 mt-0.5">
               <AlertTriangle size={18} />
