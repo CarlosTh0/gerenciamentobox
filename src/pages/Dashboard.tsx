@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CargaItem } from "@/components/CargasTable";
@@ -65,9 +64,12 @@ const Dashboard = () => {
       // Time distribution
       const hourCount: Record<string, number> = {};
       data.forEach(item => {
-        if (item.HORA) {
-          const hour = item.HORA.split(':')[0];
-          hourCount[hour] = (hourCount[hour] || 0) + 1;
+        if (item.HORA && typeof item.HORA === 'string') {
+          const hourParts = item.HORA.split(':');
+          if (hourParts.length > 0) {
+            const hour = hourParts[0];
+            hourCount[hour] = (hourCount[hour] || 0) + 1;
+          }
         }
       });
 
