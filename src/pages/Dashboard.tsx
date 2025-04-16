@@ -30,20 +30,22 @@ const Dashboard = () => {
       const statusCount = {
         LIVRE: 0,
         COMPLETO: 0,
-        PARCIAL: 0,
         JA_FOI: 0,
       };
 
       data.forEach(item => {
-        if (statusCount.hasOwnProperty(item.status)) {
-          statusCount[item.status as keyof typeof statusCount]++;
+        if (item.status === "LIVRE") {
+          statusCount.LIVRE++;
+        } else if (item.status === "COMPLETO") {
+          statusCount.COMPLETO++;
+        } else if (item.status === "JA_FOI") {
+          statusCount.JA_FOI++;
         }
       });
 
       setStatusData([
         { name: 'LIVRE', value: statusCount.LIVRE, color: '#10b981' },
         { name: 'COMPLETO', value: statusCount.COMPLETO, color: '#3b82f6' },
-        { name: 'PARCIAL', value: statusCount.PARCIAL, color: '#8b5cf6' },
         { name: 'JA FOI', value: statusCount.JA_FOI, color: '#f59e0b' },
       ]);
 
@@ -86,7 +88,7 @@ const Dashboard = () => {
     }
   }, [data]);
 
-  const COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
+  const COLORS = ['#10b981', '#3b82f6', '#f59e0b'];
 
   return (
     <div className="space-y-8">

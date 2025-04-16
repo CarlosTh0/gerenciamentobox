@@ -25,7 +25,18 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
         const sheet = workbook.Sheets[sheetName];
         const parsedData = XLSX.utils.sheet_to_json(sheet);
         
-        onUpload(parsedData);
+        // Processar os dados para definir status com base no BOX-D
+        const processedData = parsedData.map((row: any) => {
+          const boxD = row["BOX-D"];
+          // Se tiver valor em BOX-D, definir status como PARCIAL, caso contrário usar o status existente ou LIVRE
+          const status = boxD ? "PARCIAL" : (row.status || "LIVRE");
+          return {
+            ...row,
+            status
+          };
+        });
+        
+        onUpload(processedData);
         toast.success("Planilha carregada com sucesso!");
       } catch (error) {
         console.error("Erro ao processar o arquivo:", error);
