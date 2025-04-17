@@ -13,6 +13,29 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
   const [fileName, setFileName] = useState("Nenhum arquivo escolhido");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Função para converter valor decimal para formato HH:MM
+  const convertDecimalToTime = (decimalValue: any): string => {
+    if (decimalValue === undefined || decimalValue === null || decimalValue === "") return "";
+    
+    // Converte para string caso não seja
+    const strValue = String(decimalValue);
+    
+    // Se já está no formato HH:MM retorna como está
+    if (strValue.includes(':')) return strValue;
+    
+    // Tenta converter o valor para número
+    const decimal = parseFloat(strValue);
+    if (isNaN(decimal)) return strValue;
+    
+    // Converte decimal para horas e minutos
+    const totalMinutes = Math.round(decimal * 24 * 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    // Formata como HH:MM
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
   const processExcelFile = (file: File) => {
     setIsLoading(true);
     const reader = new FileReader();
@@ -25,14 +48,19 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
         const sheet = workbook.Sheets[sheetName];
         const parsedData = XLSX.utils.sheet_to_json(sheet);
         
-        // Processar os dados para definir status com base no BOX-D
+        // Processar os dados para definir status com base no BOX-D e converter formato de hora
         const processedData = parsedData.map((row: any) => {
           const boxD = row["BOX-D"];
           // Se tiver valor em BOX-D, definir status como PARCIAL, caso contrário usar o status existente ou LIVRE
           const status = boxD ? "PARCIAL" : (row.status || "LIVRE");
+          
+          // Converter formato da hora se necessário
+          const hora = convertDecimalToTime(row.HORA);
+          
           return {
             ...row,
-            status
+            status,
+            HORA: hora
           };
         });
         

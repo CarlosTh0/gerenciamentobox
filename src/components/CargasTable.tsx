@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Check, AlertCircle, Truck, Box, Calendar, MapPin, Trash2, Clock, ArrowUpDown } from "lucide-react";
@@ -196,6 +195,17 @@ const TableRow = ({
   const [hora, setHora] = useState(row.HORA || "");
   const [prebox, setPrebox] = useState(row.PREBOX || "");
   
+  const convertDecimalToTime = (decimalValue: string): string => {
+    const decimal = parseFloat(decimalValue);
+    if (!isNaN(decimal) && decimalValue.includes('.')) {
+      const totalMinutes = Math.round(decimal * 24 * 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
+    return decimalValue;
+  };
+
   const validateBoxD = (value: string) => {
     const boxDNumber = parseInt(value);
     if (value === "") return true;
@@ -205,11 +215,9 @@ const TableRow = ({
   const validatePrebox = (value: string) => {
     if (value === "") return true;
     
-    // First check if it's a number
     const preboxNumber = parseInt(value);
     if (isNaN(preboxNumber)) return false;
     
-    // Then check if it's in the valid ranges
     return (
       (preboxNumber >= 300 && preboxNumber <= 356) || 
       (preboxNumber >= 50 && preboxNumber <= 56)
@@ -225,10 +233,12 @@ const TableRow = ({
   }, [status, row]);
 
   useEffect(() => {
-    // Update local state when row props change
     setStatus(row.status);
     setBoxD(row["BOX-D"]);
-    setHora(row.HORA);
+    
+    const formattedHora = row.HORA ? convertDecimalToTime(row.HORA) : "";
+    setHora(formattedHora);
+    
     setPrebox(row.PREBOX);
   }, [row]);
 
@@ -254,7 +264,6 @@ const TableRow = ({
     setPrebox(value);
     handleInputChange("PREBOX", value);
     
-    // Validate after setting the value, but don't prevent input
     if (!validatePrebox(value) && value !== "") {
       toast.warning("Número de PREBOX recomendado: 300-356 ou 50-56", {
         description: "Você pode continuar, mas o valor está fora do padrão."
@@ -263,12 +272,16 @@ const TableRow = ({
   };
 
   const handleHoraChange = (value: string) => {
-    // Format as HH:MM
+    if (value && value.includes('.') && !value.includes(':')) {
+      const convertedTime = convertDecimalToTime(value);
+      setHora(convertedTime);
+      handleInputChange("HORA", convertedTime);
+      return;
+    }
+    
     if (value) {
-      // Remove non-digits
       const digitsOnly = value.replace(/[^\d]/g, '');
       
-      // Format with colon
       if (digitsOnly.length <= 2) {
         setHora(digitsOnly);
       } else {
