@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import FileUploader from "@/components/FileUploader";
 import StatsCards from "@/components/StatsCards";
@@ -7,7 +7,7 @@ import CargasTable, { CargaItem } from "@/components/CargasTable";
 import ConflictAlert from "@/components/ConflictAlert";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, AlertTriangle, DownloadCloud, RefreshCw, Search } from "lucide-react";
+import { PlusCircle, AlertTriangle, DownloadCloud, RefreshCw, Search, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { 
   Select, 
@@ -16,9 +16,19 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const LOCAL_STORAGE_KEY = 'cargo-management-data';
-const SYNC_INTERVAL = 5000; // Sync every 5 seconds
+const DEFAULT_SYNC_INTERVAL = 600000; // 10 minutos
 
 const Index = () => {
   const [data, setData] = useState<CargaItem[]>([]);
@@ -39,6 +49,12 @@ const Index = () => {
   const [sortField, setSortField] = useState<string>("HORA");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   
+  // Estado para controlar o intervalo de sincronização
+  const [syncInterval, setSyncInterval] = useState(DEFAULT_SYNC_INTERVAL);
+  const syncTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeUntilNextSyncRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState<number>(syncInterval);
+  
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedData) {
@@ -46,18 +62,37 @@ const Index = () => {
         const parsedData = JSON.parse(storedData);
         setData(parsedData);
       } catch (error) {
-        console.error("Error loading data from localStorage:", error);
+        console.error("Erro ao carregar dados do localStorage:", error);
       }
     }
   }, []);
   
   useEffect(() => {
-    const syncInterval = setInterval(() => {
-      syncData();
-    }, SYNC_INTERVAL);
+    // Limpar os intervalos antigos antes de criar novos
+    if (syncTimerRef.current) {
+      clearInterval(syncTimerRef.current);
+    }
     
-    return () => clearInterval(syncInterval);
-  }, []);
+    if (timeUntilNextSyncRef.current) {
+      clearInterval(timeUntilNextSyncRef.current);
+    }
+    
+    // Configurar o novo intervalo de sincronização
+    syncTimerRef.current = setInterval(() => {
+      syncData();
+    }, syncInterval);
+    
+    // Configurar o contador regressivo
+    setTimeRemaining(syncInterval);
+    timeUntilNextSyncRef.current = setInterval(() => {
+      setTimeRemaining(prev => Math.max(0, prev - 1000));
+    }, 1000);
+    
+    return () => {
+      if (syncTimerRef.current) clearInterval(syncTimerRef.current);
+      if (timeUntilNextSyncRef.current) clearInterval(timeUntilNextSyncRef.current);
+    };
+  }, [syncInterval]);
   
   useEffect(() => {
     updateStats();
@@ -75,12 +110,15 @@ const Index = () => {
     let result = [...data];
     
     if (searchTerm) {
-      result = result.filter(item => 
-        (String(item.VIAGEM || "")).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (String(item.FROTA || "")).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (String(item.PREBOX || "")).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (String(item["BOX-D"] || "")).toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      result = result.filter(item => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+          (String(item.VIAGEM || "")).toLowerCase().includes(searchLower) ||
+          (String(item.FROTA || "")).toLowerCase().includes(searchLower) ||
+          (String(item.PREBOX || "")).toLowerCase().includes(searchLower) ||
+          (String(item["BOX-D"] || "")).toLowerCase().includes(searchLower)
+        );
+      });
     }
     
     if (statusFilter !== "TODOS") {
@@ -238,16 +276,29 @@ const Index = () => {
         });
       }
     } catch (error) {
-      console.error("Error syncing data:", error);
+      console.error("Erro ao sincronizar dados:", error);
       toast.error("Erro ao sincronizar dados");
     } finally {
       setIsSyncing(false);
       setLastUpdate(new Date());
+      setTimeRemaining(syncInterval); // Reset the timer
     }
   };
   
   const handleSync = () => {
     syncData();
+  };
+  
+  const formatTimeRemaining = () => {
+    const minutes = Math.floor(timeRemaining / 60000);
+    const seconds = Math.floor((timeRemaining % 60000) / 1000);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+  
+  const handleChangeSyncInterval = (newInterval: number) => {
+    setSyncInterval(newInterval);
+    localStorage.setItem('sync-interval', String(newInterval));
+    toast.success(`Intervalo de sincronização alterado para ${newInterval / 60000} minutos`);
   };
   
   const handleExportToExcel = () => {
@@ -258,29 +309,65 @@ const Index = () => {
 
   return (
     <div className="h-full bg-background">
-      <div className="max-w-full px-4 sm:px-6 lg:px-8 py-6">
-        <div className="space-y-6">
+      <div className="max-w-full">
+        <div className="space-y-4 md:space-y-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Sistema de Gerenciamento de Cargas</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Sistema de Gerenciamento de Cargas</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">
                 Controle logístico de frota e agendamentos de viagens
               </p>
             </div>
             
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">
-                Última atualização: {lastUpdate.toLocaleTimeString()}
-              </span>
+            <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
+              <div className="flex items-center gap-1 mr-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Clock size={14} className="text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>Tempo para próxima sincronização</TooltipContent>
+                </Tooltip>
+                <span className="text-xs text-muted-foreground">
+                  {formatTimeRemaining()}
+                </span>
+              </div>
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-8 text-xs">
+                    <span>Intervalo: {syncInterval / 60000}min</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-48">
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-sm">Intervalo de sincronização</h4>
+                    <div className="flex flex-col gap-2">
+                      <Button size="sm" variant={syncInterval === 300000 ? "default" : "outline"} 
+                              onClick={() => handleChangeSyncInterval(300000)}>
+                        5 minutos
+                      </Button>
+                      <Button size="sm" variant={syncInterval === 600000 ? "default" : "outline"}
+                              onClick={() => handleChangeSyncInterval(600000)}>
+                        10 minutos (padrão)
+                      </Button>
+                      <Button size="sm" variant={syncInterval === 1800000 ? "default" : "outline"}
+                              onClick={() => handleChangeSyncInterval(1800000)}>
+                        30 minutos
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
               <Button 
                 onClick={handleSync} 
                 variant="outline"
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 h-8"
                 size="sm"
                 disabled={isSyncing}
               >
                 <RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
-                {isSyncing ? "Sincronizando..." : "Sincronizar"}
+                {isSyncing ? "Sincronizando..." : "Sincronizar agora"}
               </Button>
             </div>
           </div>
@@ -350,11 +437,12 @@ const Index = () => {
               </Button>
             </div>
             
-            <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+            <div className="flex items-center gap-2 w-full md:w-auto justify-end mt-2 md:mt-0">
               <Button 
                 onClick={handleExportToExcel}
                 variant="outline"
                 className="flex items-center gap-2"
+                size="sm"
               >
                 <DownloadCloud size={16} />
                 Exportar Excel
@@ -363,6 +451,7 @@ const Index = () => {
               <Button 
                 onClick={handleAddCarga}
                 className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600"
+                size="sm"
               >
                 <PlusCircle size={16} />
                 Adicionar Carga
@@ -370,17 +459,19 @@ const Index = () => {
             </div>
           </div>
 
-          <CargasTable 
-            data={filteredData} 
-            onUpdateCarga={handleUpdateCarga} 
-            onCheckConflicts={checkConflicts}
-            onDeleteCarga={handleDeleteCarga}
-            onSort={handleSort}
-            sortField={sortField}
-            sortDirection={sortDirection}
-          />
+          <div className="overflow-x-auto">
+            <CargasTable 
+              data={filteredData} 
+              onUpdateCarga={handleUpdateCarga} 
+              onCheckConflicts={checkConflicts}
+              onDeleteCarga={handleDeleteCarga}
+              onSort={handleSort}
+              sortField={sortField}
+              sortDirection={sortDirection}
+            />
+          </div>
           
-          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-lg p-4 flex items-start gap-3 mt-8">
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-lg p-4 flex items-start gap-3 mt-6">
             <div className="text-amber-500 mt-0.5">
               <AlertTriangle size={18} />
             </div>
@@ -390,7 +481,7 @@ const Index = () => {
                 Este sistema permite o gerenciamento de cargas e agendamentos, com verificação de conflitos 
                 de BOX-D e validação dos números de PREBOX (300-356 ou 50-56) e BOX-D (1-32).
               </p>
-              <div className="mt-2 flex gap-2 text-xs text-amber-600 dark:text-amber-400">
+              <div className="mt-2 flex flex-wrap gap-2 text-xs text-amber-600 dark:text-amber-400">
                 <div className="flex items-center">
                   <div className="w-2 h-2 rounded-full bg-green-500 mr-1"></div>
                   <span>Online</span>
@@ -398,6 +489,10 @@ const Index = () => {
                 <div className="flex items-center">
                   <div className="w-2 h-2 rounded-full bg-amber-500 mr-1"></div>
                   <span>Modo Offline Disponível</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 mr-1"></div>
+                  <span>Sincronização: {syncInterval / 60000}min</span>
                 </div>
               </div>
             </div>

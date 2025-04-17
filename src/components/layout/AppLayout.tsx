@@ -20,6 +20,7 @@ import {
 import { Sun, Moon, LayoutDashboard, Truck, RefreshCw, PanelLeftClose, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function AppLayout() {
   const { theme, setTheme } = useTheme();
@@ -27,6 +28,7 @@ export default function AppLayout() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -39,13 +41,16 @@ export default function AppLayout() {
     const savedSidebarState = localStorage.getItem('sidebar-visible');
     if (savedSidebarState) {
       setSidebarVisible(savedSidebarState === 'true');
+    } else if (isMobile) {
+      // Por padrão, esconder a barra lateral em dispositivos móveis
+      setSidebarVisible(false);
     }
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [isMobile]);
 
   const handleSync = () => {
     if (isOnline) {
@@ -131,8 +136,8 @@ export default function AppLayout() {
           </SidebarFooter>
           <SidebarRail />
         </Sidebar>
-        <SidebarInset>
-          <div className="p-4">
+        <SidebarInset className="w-full overflow-auto">
+          <div className="p-2 sm:p-4 w-full">
             <Button 
               variant="outline" 
               size="sm" 
@@ -142,7 +147,9 @@ export default function AppLayout() {
               {sidebarVisible ? <PanelLeftClose size={16} /> : <PanelLeft size={16} />}
               <span className="ml-2">{sidebarVisible ? 'Esconder Menu' : 'Mostrar Menu'}</span>
             </Button>
-            <Outlet />
+            <div className="w-full">
+              <Outlet />
+            </div>
           </div>
         </SidebarInset>
       </div>
