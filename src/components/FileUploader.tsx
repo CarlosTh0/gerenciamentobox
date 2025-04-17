@@ -13,11 +13,11 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
   const [fileName, setFileName] = useState("Nenhum arquivo escolhido");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Função para converter valor decimal para formato HH:MM
+  // Função corrigida para converter valor decimal para formato HH:MM
   const convertDecimalToTime = (decimalValue: any): string => {
     if (decimalValue === undefined || decimalValue === null || decimalValue === "") return "";
     
-    // Converte para string caso não seja
+    // Garantir que decimalValue seja string antes de usar includes()
     const strValue = String(decimalValue);
     
     // Se já está no formato HH:MM retorna como está
@@ -54,8 +54,14 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
           // Se tiver valor em BOX-D, definir status como PARCIAL, caso contrário usar o status existente ou LIVRE
           const status = boxD ? "PARCIAL" : (row.status || "LIVRE");
           
-          // Converter formato da hora se necessário
-          const hora = convertDecimalToTime(row.HORA);
+          // Converter formato da hora se necessário - com tratamento de erro
+          let hora;
+          try {
+            hora = convertDecimalToTime(row.HORA);
+          } catch (error) {
+            console.error("Erro ao converter hora:", error, row.HORA);
+            hora = row.HORA || "";
+          }
           
           return {
             ...row,

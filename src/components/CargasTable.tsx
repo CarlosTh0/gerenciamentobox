@@ -195,15 +195,21 @@ const TableRow = ({
   const [hora, setHora] = useState(row.HORA || "");
   const [prebox, setPrebox] = useState(row.PREBOX || "");
   
-  const convertDecimalToTime = (decimalValue: string): string => {
-    const decimal = parseFloat(decimalValue);
-    if (!isNaN(decimal) && decimalValue.includes('.')) {
-      const totalMinutes = Math.round(decimal * 24 * 60);
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-    }
-    return decimalValue;
+  const convertDecimalToTime = (decimalValue: any): string => {
+    if (decimalValue === undefined || decimalValue === null || decimalValue === "") return "";
+    
+    const strValue = String(decimalValue);
+    
+    if (strValue.includes(':')) return strValue;
+    
+    const decimal = parseFloat(strValue);
+    if (isNaN(decimal)) return strValue;
+    
+    const totalMinutes = Math.round(decimal * 24 * 60);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   };
 
   const validateBoxD = (value: string) => {
@@ -236,8 +242,13 @@ const TableRow = ({
     setStatus(row.status);
     setBoxD(row["BOX-D"]);
     
-    const formattedHora = row.HORA ? convertDecimalToTime(row.HORA) : "";
-    setHora(formattedHora);
+    try {
+      const formattedHora = convertDecimalToTime(row.HORA);
+      setHora(formattedHora);
+    } catch (error) {
+      console.error("Erro ao converter hora:", error, row.HORA);
+      setHora(row.HORA || "");
+    }
     
     setPrebox(row.PREBOX);
   }, [row]);
@@ -273,9 +284,15 @@ const TableRow = ({
 
   const handleHoraChange = (value: string) => {
     if (value && value.includes('.') && !value.includes(':')) {
-      const convertedTime = convertDecimalToTime(value);
-      setHora(convertedTime);
-      handleInputChange("HORA", convertedTime);
+      try {
+        const convertedTime = convertDecimalToTime(value);
+        setHora(convertedTime);
+        handleInputChange("HORA", convertedTime);
+      } catch (error) {
+        console.error("Erro ao converter hora:", error);
+        setHora(value);
+        handleInputChange("HORA", value);
+      }
       return;
     }
     
