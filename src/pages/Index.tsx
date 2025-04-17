@@ -1,31 +1,18 @@
-
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import FileUploader from "@/components/FileUploader";
 import StatsCards from "@/components/StatsCards";
 import CargasTable, { CargaItem } from "@/components/CargasTable";
 import ConflictAlert from "@/components/ConflictAlert";
+import CalendarView from "@/components/CalendarView";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, AlertTriangle, DownloadCloud, RefreshCw, Search, Clock } from "lucide-react";
+import { PlusCircle, AlertTriangle, DownloadCloud, RefreshCw, Search, Clock, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const LOCAL_STORAGE_KEY = 'cargo-management-data';
 const DEFAULT_SYNC_INTERVAL = 600000; // 10 minutos
@@ -49,12 +36,13 @@ const Index = () => {
   const [sortField, setSortField] = useState<string>("HORA");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   
-  // Estado para controlar o intervalo de sincronização
   const [syncInterval, setSyncInterval] = useState(DEFAULT_SYNC_INTERVAL);
   const syncTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeUntilNextSyncRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(syncInterval);
   
+  const [view, setView] = useState<"table" | "calendar">("table");
+
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedData) {
@@ -68,7 +56,6 @@ const Index = () => {
   }, []);
   
   useEffect(() => {
-    // Limpar os intervalos antigos antes de criar novos
     if (syncTimerRef.current) {
       clearInterval(syncTimerRef.current);
     }
@@ -77,12 +64,10 @@ const Index = () => {
       clearInterval(timeUntilNextSyncRef.current);
     }
     
-    // Configurar o novo intervalo de sincronização
     syncTimerRef.current = setInterval(() => {
       syncData();
     }, syncInterval);
     
-    // Configurar o contador regressivo
     setTimeRemaining(syncInterval);
     timeUntilNextSyncRef.current = setInterval(() => {
       setTimeRemaining(prev => Math.max(0, prev - 1000));
@@ -129,7 +114,6 @@ const Index = () => {
       let valueA = a[sortField as keyof CargaItem];
       let valueB = b[sortField as keyof CargaItem];
       
-      // Convert to string to ensure we can compare
       const stringA = String(valueA || "");
       const stringB = String(valueB || "");
       
@@ -281,7 +265,7 @@ const Index = () => {
     } finally {
       setIsSyncing(false);
       setLastUpdate(new Date());
-      setTimeRemaining(syncInterval); // Reset the timer
+      setTimeRemaining(syncInterval);
     }
   };
   
@@ -383,94 +367,115 @@ const Index = () => {
 
           <ConflictAlert conflicts={conflicts} />
 
-          <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <div className="relative w-full sm:w-72">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar viagem, frota, box..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+          <Tabs defaultValue="table" className="w-full">
+            <div className="flex justify-between items-center mb-4">
+              <TabsList>
+                <TabsTrigger value="table" className="flex items-center gap-2">
+                  <Search className="h-4 w-4" />
+                  Lista
+                </TabsTrigger>
+                <TabsTrigger value="calendar" className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Calendário
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="flex items-center gap-2">
+                <Button 
+                  onClick={handleExportToExcel}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                  size="sm"
+                >
+                  <DownloadCloud size={16} />
+                  Exportar Excel
+                </Button>
+                
+                <Button 
+                  onClick={handleAddCarga}
+                  className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600"
+                  size="sm"
+                >
+                  <PlusCircle size={16} />
+                  Adicionar Carga
+                </Button>
+              </div>
+            </div>
+
+            <TabsContent value="table" className="space-y-4">
+              <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                  <div className="relative w-full sm:w-72">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar viagem, frota, box..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                  
+                  <Select
+                    value={statusFilter}
+                    onValueChange={setStatusFilter}
+                  >
+                    <SelectTrigger className="w-full sm:w-36">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="TODOS">Todos</SelectItem>
+                      <SelectItem value="LIVRE">Livre</SelectItem>
+                      <SelectItem value="PARCIAL">Parcial</SelectItem>
+                      <SelectItem value="COMPLETO">Completo</SelectItem>
+                      <SelectItem value="JA_FOI">Já Foi</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select
+                    value={sortField}
+                    onValueChange={setSortField}
+                  >
+                    <SelectTrigger className="w-full sm:w-36">
+                      <SelectValue placeholder="Ordenar por" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="HORA">Hora</SelectItem>
+                      <SelectItem value="VIAGEM">Viagem</SelectItem>
+                      <SelectItem value="FROTA">Frota</SelectItem>
+                      <SelectItem value="PREBOX">Prebox</SelectItem>
+                      <SelectItem value="BOX-D">Box-D</SelectItem>
+                      <SelectItem value="status">Status</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
+                  >
+                    {sortDirection === "asc" ? "↑" : "↓"}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <CargasTable 
+                  data={filteredData} 
+                  onUpdateCarga={handleUpdateCarga} 
+                  onCheckConflicts={checkConflicts}
+                  onDeleteCarga={handleDeleteCarga}
+                  onSort={handleSort}
+                  sortField={sortField}
+                  sortDirection={sortDirection}
                 />
               </div>
-              
-              <Select
-                value={statusFilter}
-                onValueChange={setStatusFilter}
-              >
-                <SelectTrigger className="w-full sm:w-36">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TODOS">Todos</SelectItem>
-                  <SelectItem value="LIVRE">Livre</SelectItem>
-                  <SelectItem value="PARCIAL">Parcial</SelectItem>
-                  <SelectItem value="COMPLETO">Completo</SelectItem>
-                  <SelectItem value="JA_FOI">Já Foi</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Select
-                value={sortField}
-                onValueChange={setSortField}
-              >
-                <SelectTrigger className="w-full sm:w-36">
-                  <SelectValue placeholder="Ordenar por" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="HORA">Hora</SelectItem>
-                  <SelectItem value="VIAGEM">Viagem</SelectItem>
-                  <SelectItem value="FROTA">Frota</SelectItem>
-                  <SelectItem value="PREBOX">Prebox</SelectItem>
-                  <SelectItem value="BOX-D">Box-D</SelectItem>
-                  <SelectItem value="status">Status</SelectItem>
-                </SelectContent>
-              </Select>
-              
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
-              >
-                {sortDirection === "asc" ? "↑" : "↓"}
-              </Button>
-            </div>
-            
-            <div className="flex items-center gap-2 w-full md:w-auto justify-end mt-2 md:mt-0">
-              <Button 
-                onClick={handleExportToExcel}
-                variant="outline"
-                className="flex items-center gap-2"
-                size="sm"
-              >
-                <DownloadCloud size={16} />
-                Exportar Excel
-              </Button>
-              
-              <Button 
-                onClick={handleAddCarga}
-                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600"
-                size="sm"
-              >
-                <PlusCircle size={16} />
-                Adicionar Carga
-              </Button>
-            </div>
-          </div>
+            </TabsContent>
 
-          <div className="overflow-x-auto">
-            <CargasTable 
-              data={filteredData} 
-              onUpdateCarga={handleUpdateCarga} 
-              onCheckConflicts={checkConflicts}
-              onDeleteCarga={handleDeleteCarga}
-              onSort={handleSort}
-              sortField={sortField}
-              sortDirection={sortDirection}
-            />
-          </div>
-          
+            <TabsContent value="calendar">
+              <CalendarView data={filteredData} />
+            </TabsContent>
+          </Tabs>
+
           <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-lg p-4 flex items-start gap-3 mt-6">
             <div className="text-amber-500 mt-0.5">
               <AlertTriangle size={18} />
