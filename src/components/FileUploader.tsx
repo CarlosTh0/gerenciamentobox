@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUp, Upload } from "lucide-react";
@@ -15,25 +14,37 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
 
   // Função corrigida para converter valor decimal para formato HH:MM
   const convertDecimalToTime = (decimalValue: any): string => {
-    if (decimalValue === undefined || decimalValue === null || decimalValue === "") return "";
-    
-    // Garantir que decimalValue seja string antes de usar includes()
-    const strValue = String(decimalValue);
-    
-    // Se já está no formato HH:MM retorna como está
-    if (strValue.includes(':')) return strValue;
-    
-    // Tenta converter o valor para número
-    const decimal = parseFloat(strValue);
-    if (isNaN(decimal)) return strValue;
-    
-    // Converte decimal para horas e minutos
-    const totalMinutes = Math.round(decimal * 24 * 60);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    
-    // Formata como HH:MM
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    try {
+      // Handle null, undefined or empty value
+      if (decimalValue === undefined || decimalValue === null || decimalValue === "") {
+        return "";
+      }
+      
+      // Garantir que decimalValue seja string antes de usar includes()
+      const strValue = String(decimalValue);
+      
+      // Se já está no formato HH:MM retorna como está
+      if (strValue.includes(':')) {
+        return strValue;
+      }
+      
+      // Tenta converter o valor para número
+      const decimal = parseFloat(strValue);
+      if (isNaN(decimal)) {
+        return strValue;
+      }
+      
+      // Converte decimal para horas e minutos
+      const totalMinutes = Math.round(decimal * 24 * 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      
+      // Formata como HH:MM
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    } catch (error) {
+      console.error("Erro ao converter formato de hora:", error, decimalValue);
+      return String(decimalValue); // Return as string in case of error
+    }
   };
 
   const processExcelFile = (file: File) => {

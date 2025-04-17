@@ -196,20 +196,32 @@ const TableRow = ({
   const [prebox, setPrebox] = useState(row.PREBOX || "");
   
   const convertDecimalToTime = (decimalValue: any): string => {
-    if (decimalValue === undefined || decimalValue === null || decimalValue === "") return "";
+    if (decimalValue === undefined || decimalValue === null || decimalValue === "") {
+      return "";
+    }
     
-    const strValue = String(decimalValue);
-    
-    if (strValue.includes(':')) return strValue;
-    
-    const decimal = parseFloat(strValue);
-    if (isNaN(decimal)) return strValue;
-    
-    const totalMinutes = Math.round(decimal * 24 * 60);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    try {
+      const strValue = String(decimalValue);
+      
+      if (strValue.includes(':')) {
+        return strValue;
+      }
+      
+      const decimal = parseFloat(strValue);
+      
+      if (isNaN(decimal)) {
+        return strValue;
+      }
+      
+      const totalMinutes = Math.round(decimal * 24 * 60);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    } catch (error) {
+      console.error("Error converting decimal to time:", error, decimalValue);
+      return String(decimalValue);
+    }
   };
 
   const validateBoxD = (value: string) => {
@@ -283,7 +295,7 @@ const TableRow = ({
   };
 
   const handleHoraChange = (value: string) => {
-    if (value && value.includes('.') && !value.includes(':')) {
+    if (value && String(value).includes('.') && !String(value).includes(':')) {
       try {
         const convertedTime = convertDecimalToTime(value);
         setHora(convertedTime);
