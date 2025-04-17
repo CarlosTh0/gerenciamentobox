@@ -291,6 +291,16 @@ const Index = () => {
     });
   };
 
+  const handleAddEvent = (newEvent: any) => {
+    const newEventWithId = {
+      ...newEvent,
+      id: uuidv4(),
+    };
+    
+    setData([...data, newEventWithId]);
+    toast.success("Novo agendamento adicionado!");
+  };
+
   return (
     <div className="h-full bg-background">
       <div className="max-w-full">
@@ -472,7 +482,7 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="calendar">
-              <CalendarView data={filteredData} />
+              <CalendarView data={filteredData} onAddEvent={handleAddEvent} />
             </TabsContent>
           </Tabs>
 
