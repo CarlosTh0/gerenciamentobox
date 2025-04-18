@@ -81,47 +81,41 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
         const parsedData = XLSX.utils.sheet_to_json(sheet);
         
         const processedData = parsedData.map((row: any) => {
-          const dateTimeColumns = Object.keys(row).filter(key => 
-            key.toLowerCase().includes('data') || 
-            key.toLowerCase().includes('hora') || 
-            key.toLowerCase().includes('date') || 
-            key.toLowerCase().includes('time')
-          );
+          const horaValue = row.HORAS || row.HORA || "";
+          const viagemValue = String(row.VIAGEM || "").trim();
+          const frotaValue = String(row.FROTA || "").trim();
+          const preBoxValue = row["PRÉ BOX"] || row["PRE BOX"] || row.PREBOX || "";
+          const boxDValue = row["BOX DENTRO"] || row["BOX-D"] || "";
           
-          const viagemColumns = Object.keys(row).filter(key => 
-            key.toLowerCase().includes('viagem') || 
-            key.toLowerCase().includes('tms')
-          );
-          
-          const frotaColumns = Object.keys(row).filter(key => 
-            key.toLowerCase().includes('frota') || 
-            key.toLowerCase().includes('veiculo') || 
-            key.toLowerCase().includes('veículo')
-          );
-          
-          const horaValue = dateTimeColumns.length > 0 ? extractTimeOnly(row[dateTimeColumns[0]]) : "";
-          
-          let viagemValue = "";
-          if (viagemColumns.length > 0) {
-            const rawViagem = row[viagemColumns[0]];
-            if (rawViagem !== undefined && rawViagem !== null) {
-              viagemValue = String(Number(rawViagem.toString().replace(/[^\d]/g, '')));
-            }
-          }
-          
-          const frotaValue = frotaColumns.length > 0 ? String(row[frotaColumns[0]] || "") : "";
-          
-          const boxD = row["BOX-D"] || "";
-          const status = boxD ? "PARCIAL" : (row.status || "LIVRE");
+          const data = row.DATA || "";
+          const viagemAntiga = row["VIAGEM ANTIGA"] || "";
+          const km = row.KM || "";
+          const quantidade = row.QUANTIDADE || "";
+          const turno = row.TURNO || "";
+          const tipoCarga = row["TIPO DE CARGA"] || "";
+          const regiao = row.REGIÃO || row.REGIAO || "";
+          const situacao = row.SITUAÇÃO || row.SITUACAO || "LIVRE";
+          const troca = row.TROCA || "";
+          const dataPrevManifesto = row["Data Prev. Do Manifesto"] || "";
+          const agendada = row.AGENDADA || "";
           
           return {
-            ...row,
+            DATA: data,
             HORA: horaValue,
             VIAGEM: viagemValue,
+            "VIAGEM ANTIGA": viagemAntiga,
+            KM: km,
             FROTA: frotaValue,
-            PREBOX: row.PREBOX || "",
-            "BOX-D": boxD,
-            status
+            PREBOX: preBoxValue,
+            "BOX-D": boxDValue,
+            QUANTIDADE: quantidade,
+            TURNO: turno,
+            "TIPO DE CARGA": tipoCarga,
+            REGIAO: regiao,
+            status: situacao,
+            TROCA: troca,
+            "DATA PREV MANIFESTO": dataPrevManifesto,
+            AGENDADA: agendada
           };
         });
         
