@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Check, AlertCircle, Truck, Box, Calendar, MapPin, Trash2, Clock, ArrowUpDown } from "lucide-react";
+import { Check, AlertCircle, Truck, Box, MapPin, Trash2, Clock, ArrowUpDown } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 
