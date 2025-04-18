@@ -68,75 +68,6 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
     }
   };
 
-  const processExcelFile = (file: File) => {
-    setIsLoading(true);
-    const reader = new FileReader();
-    
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const parsedData = XLSX.utils.sheet_to_json(sheet);
-        
-        const processedData = parsedData.map((row: any) => {
-          const horaValue = row.HORAS || row.HORA || "";
-          const viagemValue = String(row.VIAGEM || "").trim();
-          const frotaValue = String(row.FROTA || "").trim();
-          const preBoxValue = row["PRÉ BOX"] || row["PRE BOX"] || row.PREBOX || "";
-          const boxDValue = row["BOX DENTRO"] || row["BOX-D"] || "";
-          
-          const data = row.DATA || "";
-          const viagemAntiga = row["VIAGEM ANTIGA"] || "";
-          const km = row.KM || "";
-          const quantidade = row.QUANTIDADE || "";
-          const turno = row.TURNO || "";
-          const tipoCarga = row["TIPO DE CARGA"] || "";
-          const regiao = row.REGIÃO || row.REGIAO || "";
-          const situacao = row.SITUAÇÃO || row.SITUACAO || "LIVRE";
-          const troca = row.TROCA || "";
-          const dataPrevManifesto = row["Data Prev. Do Manifesto"] || "";
-          const agendada = row.AGENDADA || "";
-          
-          return {
-            DATA: data,
-            HORA: horaValue,
-            VIAGEM: viagemValue,
-            "VIAGEM ANTIGA": viagemAntiga,
-            KM: km,
-            FROTA: frotaValue,
-            PREBOX: preBoxValue,
-            "BOX-D": boxDValue,
-            QUANTIDADE: quantidade,
-            TURNO: turno,
-            "TIPO DE CARGA": tipoCarga,
-            REGIAO: regiao,
-            status: situacao,
-            TROCA: troca,
-            "DATA PREV MANIFESTO": dataPrevManifesto,
-            AGENDADA: agendada
-          };
-        });
-        
-        onUpload(processedData);
-        toast.success("Planilha carregada com sucesso!");
-      } catch (error) {
-        console.error("Erro ao processar o arquivo:", error);
-        toast.error("Erro ao processar o arquivo. Verifique o formato.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    reader.onerror = () => {
-      toast.error("Erro ao ler o arquivo");
-      setIsLoading(false);
-    };
-    
-    reader.readAsBinaryString(file);
-  };
-
   const processTwoFiles = async (files: File[]) => {
     if (files.length < 2) {
       toast.error("Necessário pelo menos dois arquivos para combinar");
@@ -192,7 +123,10 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
                 return {
                   HORA: horaValue,
                   VIAGEM: viagemValue,
-                  FROTA: frotaValue
+                  FROTA: frotaValue,
+                  PREBOX: "",
+                  "BOX-D": "",
+                  status: "LIVRE"
                 };
               });
               
@@ -221,14 +155,7 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
         return horaA.localeCompare(horaB);
       });
       
-      const formattedData = combinedData.map(item => ({
-        ...item,
-        PREBOX: "",
-        "BOX-D": "",
-        status: "LIVRE"
-      }));
-      
-      onUpload(formattedData);
+      onUpload(combinedData);
       
       const fileNames = files.slice(0, 2).map(f => f.name).join(', ');
       setFileName(`Combinado: ${fileNames}`);
@@ -346,6 +273,75 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
     } finally {
       setIsComplementLoading(false);
     }
+  };
+
+  const processExcelFile = (file: File) => {
+    setIsLoading(true);
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const parsedData = XLSX.utils.sheet_to_json(sheet);
+        
+        const processedData = parsedData.map((row: any) => {
+          const horaValue = row.HORAS || row.HORA || "";
+          const viagemValue = String(row.VIAGEM || "").trim();
+          const frotaValue = String(row.FROTA || "").trim();
+          const preBoxValue = row["PRÉ BOX"] || row["PRE BOX"] || row.PREBOX || "";
+          const boxDValue = row["BOX DENTRO"] || row["BOX-D"] || "";
+          
+          const data = row.DATA || "";
+          const viagemAntiga = row["VIAGEM ANTIGA"] || "";
+          const km = row.KM || "";
+          const quantidade = row.QUANTIDADE || "";
+          const turno = row.TURNO || "";
+          const tipoCarga = row["TIPO DE CARGA"] || "";
+          const regiao = row.REGIÃO || row.REGIAO || "";
+          const situacao = row.SITUAÇÃO || row.SITUACAO || "LIVRE";
+          const troca = row.TROCA || "";
+          const dataPrevManifesto = row["Data Prev. Do Manifesto"] || "";
+          const agendada = row.AGENDADA || "";
+          
+          return {
+            DATA: data,
+            HORA: horaValue,
+            VIAGEM: viagemValue,
+            "VIAGEM ANTIGA": viagemAntiga,
+            KM: km,
+            FROTA: frotaValue,
+            PREBOX: preBoxValue,
+            "BOX-D": boxDValue,
+            QUANTIDADE: quantidade,
+            TURNO: turno,
+            "TIPO DE CARGA": tipoCarga,
+            REGIAO: regiao,
+            status: situacao,
+            TROCA: troca,
+            "DATA PREV MANIFESTO": dataPrevManifesto,
+            AGENDADA: agendada
+          };
+        });
+        
+        onUpload(processedData);
+        toast.success("Planilha carregada com sucesso!");
+      } catch (error) {
+        console.error("Erro ao processar o arquivo:", error);
+        toast.error("Erro ao processar o arquivo. Verifique o formato.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    reader.onerror = () => {
+      toast.error("Erro ao ler o arquivo");
+      setIsLoading(false);
+    };
+    
+    reader.readAsBinaryString(file);
   };
 
   return (
