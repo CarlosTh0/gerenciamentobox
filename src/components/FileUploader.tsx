@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FileUp, Upload, FolderOpen, FilePlus } from "lucide-react";
+import { FileUp, Upload, FolderOpen } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import * as XLSX from 'xlsx';
 
@@ -12,7 +12,6 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
   const [fileName, setFileName] = useState("Nenhum arquivo escolhido");
   const [isLoading, setIsLoading] = useState(false);
   const [isAutomaticLoading, setIsAutomaticLoading] = useState(false);
-  const [isComplementLoading, setIsComplementLoading] = useState(false);
 
   const convertDecimalToTime = (decimalValue: any): string => {
     try {
@@ -114,7 +113,7 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
                 if (viagemColumns.length > 0) {
                   const rawViagem = row[viagemColumns[0]];
                   if (rawViagem !== undefined && rawViagem !== null) {
-                    viagemValue = String(Number(rawViagem.toString().replace(/[^\d]/g, '')));
+                    viagemValue = String(rawViagem);
                   }
                 }
                 
@@ -210,71 +209,6 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
     }
   };
 
-  const mergeComplementaryData = (currentData: any[], complementData: any[]) => {
-    return currentData.map(row => {
-      const complement = complementData.find(compRow => 
-        String(compRow.VIAGEM || "").trim() === String(row.VIAGEM || "").trim()
-      );
-      
-      if (complement) {
-        return {
-          ...row,
-          PREBOX: complement.PREBOX || row.PREBOX || "",
-          "BOX-D": complement["BOX-D"] || row["BOX-D"] || "",
-          status: complement.status || row.status || "LIVRE"
-        };
-      }
-      
-      return row;
-    });
-  };
-
-  const handleComplementaryFile = async (file: File) => {
-    setIsComplementLoading(true);
-    
-    try {
-      const reader = new FileReader();
-      
-      reader.onload = async (e) => {
-        try {
-          const data = e.target?.result;
-          const workbook = XLSX.read(data, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const parsedData = XLSX.utils.sheet_to_json(sheet);
-          
-          const currentDataStr = localStorage.getItem('cargo-management-data');
-          if (!currentDataStr) {
-            toast.error("Nenhum dado base encontrado para complementar");
-            return;
-          }
-          
-          const currentData = JSON.parse(currentDataStr);
-          
-          const mergedData = mergeComplementaryData(currentData, parsedData);
-          
-          onUpload(mergedData);
-          toast.success("Dados complementares mesclados com sucesso!");
-        } catch (error) {
-          console.error("Erro ao processar arquivo complementar:", error);
-          toast.error("Erro ao processar arquivo complementar");
-        }
-      };
-      
-      reader.onerror = () => {
-        toast.error("Erro ao ler arquivo complementar");
-      };
-      
-      reader.readAsBinaryString(file);
-      
-    } catch (error) {
-      console.error("Erro ao processar arquivo complementar:", error);
-      toast.error("Erro ao processar arquivo complementar");
-    } finally {
-      setIsComplementLoading(false);
-    }
-  };
-
   const processExcelFile = (file: File) => {
     setIsLoading(true);
     const reader = new FileReader();
@@ -357,7 +291,7 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
                 onChange={handleFileChange}
                 accept=".xlsx,.xls,.csv"
-                disabled={isLoading || isAutomaticLoading || isComplementLoading}
+                disabled={isLoading || isAutomaticLoading}
               />
             </label>
           </div>
@@ -368,34 +302,16 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
           <Button
             onClick={handleAutomaticFileSearch}
             className="w-full sm:w-auto flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white shadow-sm"
-            disabled={isLoading || isAutomaticLoading || isComplementLoading}
+            disabled={isLoading || isAutomaticLoading}
           >
             <FolderOpen size={16} />
             {isAutomaticLoading ? "Processando..." : "Buscar Arquivos Automaticamente"}
           </Button>
           
-          <div className="relative">
-            <Button
-              onClick={() => document.getElementById('complementFile')?.click()}
-              className="w-full sm:w-auto flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white shadow-sm"
-              disabled={isLoading || isAutomaticLoading || isComplementLoading}
-            >
-              <FilePlus size={16} />
-              {isComplementLoading ? "Mesclando..." : "Complementar Dados"}
-            </Button>
-            <input
-              id="complementFile"
-              type="file"
-              className="hidden"
-              onChange={(e) => e.target.files?.[0] && handleComplementaryFile(e.target.files[0])}
-              accept=".xlsx,.xls,.csv"
-            />
-          </div>
-          
           <Button
             onClick={() => toast.info("Utilize o botão 'Escolher arquivo' para carregar uma planilha")}
             className="w-full sm:w-auto flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
-            disabled={isLoading || isAutomaticLoading || isComplementLoading}
+            disabled={isLoading || isAutomaticLoading}
           >
             <Upload size={16} />
             {isLoading ? "Processando..." : "Carregar Excel"}
