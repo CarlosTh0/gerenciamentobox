@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import FileUploader from "@/components/FileUploader";
@@ -317,67 +316,10 @@ const Index = () => {
 
   return (
     <div className="h-full bg-background">
-      <div className="max-w-full">
-        <div className="space-y-4 md:space-y-6">
+      <div className="container mx-auto max-w-[1400px] py-6 px-4">
+        <div className="space-y-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">Sistema de Gerenciamento de Cargas</h1>
-              <p className="text-muted-foreground text-sm sm:text-base">
-                Controle logístico de frota e agendamentos de viagens
-              </p>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-2 md:gap-3 w-full md:w-auto justify-end">
-              <div className="flex items-center gap-1 mr-2">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Clock size={14} className="text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>Tempo para próxima sincronização</TooltipContent>
-                </Tooltip>
-                <span className="text-xs text-muted-foreground">
-                  {formatTimeRemaining()}
-                </span>
-              </div>
-              
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 text-xs">
-                    <span>Intervalo: {syncInterval / 60000}min</span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-48">
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm">Intervalo de sincronização</h4>
-                    <div className="flex flex-col gap-2">
-                      <Button size="sm" variant={syncInterval === 300000 ? "default" : "outline"} 
-                              onClick={() => handleChangeSyncInterval(300000)}>
-                        5 minutos
-                      </Button>
-                      <Button size="sm" variant={syncInterval === 600000 ? "default" : "outline"}
-                              onClick={() => handleChangeSyncInterval(600000)}>
-                        10 minutos (padrão)
-                      </Button>
-                      <Button size="sm" variant={syncInterval === 1800000 ? "default" : "outline"}
-                              onClick={() => handleChangeSyncInterval(1800000)}>
-                        30 minutos
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-              
-              <Button 
-                onClick={handleSync} 
-                variant="outline"
-                className="flex items-center gap-1 h-8"
-                size="sm"
-                disabled={isSyncing}
-              >
-                <RefreshCw size={14} className={isSyncing ? "animate-spin" : ""} />
-                {isSyncing ? "Sincronizando..." : "Sincronizar agora"}
-              </Button>
-            </div>
+            <WelcomeMessage userName="Operador" />
           </div>
           
           <FileUploader onUpload={handleFileUpload} />
@@ -391,7 +333,7 @@ const Index = () => {
 
           <ConflictAlert conflicts={conflicts} />
 
-          <div className="space-y-4">
+          <div className="space-y-4 bg-card rounded-xl p-6 shadow-lg">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold">Lista de Cargas</h2>
@@ -477,7 +419,7 @@ const Index = () => {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-lg border bg-background">
               <CargasTable 
                 data={filteredData} 
                 onUpdateCarga={handleUpdateCarga} 
