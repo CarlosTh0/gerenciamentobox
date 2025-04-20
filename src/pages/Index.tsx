@@ -4,6 +4,7 @@ import FileUploader from "@/components/FileUploader";
 import StatsCards from "@/components/StatsCards";
 import CargasTable, { CargaItem } from "@/components/CargasTable";
 import ConflictAlert from "@/components/ConflictAlert";
+import WelcomeMessage from "@/components/WelcomeMessage";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, AlertTriangle, DownloadCloud, RefreshCw, Search, Clock } from "lucide-react";
