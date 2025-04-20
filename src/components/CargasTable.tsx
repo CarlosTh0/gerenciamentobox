@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Check, AlertCircle, Truck, Box, MapPin, Trash2, Clock, ArrowUpDown } from "lucide-react";
+import { Check, AlertCircle, Truck, Box, MapPin, Trash2, Clock } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
 
@@ -40,66 +41,12 @@ const CargasTable = ({
         <table className="w-full">
           <thead>
             <tr className="bg-muted/50 border-b border-border">
-              <TableHeader 
-                icon={<Clock className="h-4 w-4" />} 
-                field="HORA"
-                sortable
-                currentSort={sortField}
-                sortDirection={sortDirection}
-                onSort={onSort}
-              >
-                HORA
-              </TableHeader>
-              <TableHeader 
-                icon={<Truck className="h-4 w-4" />}
-                field="VIAGEM"
-                sortable
-                currentSort={sortField}
-                sortDirection={sortDirection}
-                onSort={onSort}
-              >
-                VIAGEM
-              </TableHeader>
-              <TableHeader 
-                icon={<Truck className="h-4 w-4" />}
-                field="FROTA"
-                sortable
-                currentSort={sortField}
-                sortDirection={sortDirection}
-                onSort={onSort}
-              >
-                FROTA
-              </TableHeader>
-              <TableHeader 
-                icon={<Box className="h-4 w-4" />}
-                field="PREBOX"
-                sortable
-                currentSort={sortField}
-                sortDirection={sortDirection}
-                onSort={onSort}
-              >
-                PREBOX
-              </TableHeader>
-              <TableHeader 
-                icon={<MapPin className="h-4 w-4" />}
-                field="BOX-D"
-                sortable
-                currentSort={sortField}
-                sortDirection={sortDirection}
-                onSort={onSort}
-              >
-                BOX-D
-              </TableHeader>
-              <TableHeader 
-                icon={<Check className="h-4 w-4" />}
-                field="status"
-                sortable
-                currentSort={sortField}
-                sortDirection={sortDirection}
-                onSort={onSort}
-              >
-                STATUS
-              </TableHeader>
+              <TableHeader icon={<Clock className="h-4 w-4" />}>HORA</TableHeader>
+              <TableHeader icon={<Truck className="h-4 w-4" />}>VIAGEM</TableHeader>
+              <TableHeader icon={<Truck className="h-4 w-4" />}>FROTA</TableHeader>
+              <TableHeader icon={<Box className="h-4 w-4" />}>PREBOX</TableHeader>
+              <TableHeader icon={<MapPin className="h-4 w-4" />}>BOX-D</TableHeader>
+              <TableHeader icon={<Check className="h-4 w-4" />}>STATUS</TableHeader>
               <TableHeader>AÇÕES</TableHeader>
             </tr>
           </thead>
@@ -132,47 +79,15 @@ const CargasTable = ({
 interface TableHeaderProps {
   children: React.ReactNode;
   icon?: React.ReactNode;
-  field?: string;
-  sortable?: boolean;
-  currentSort?: string;
-  sortDirection?: "asc" | "desc";
-  onSort?: (field: string) => void;
 }
 
-const TableHeader = ({ 
-  children, 
-  icon, 
-  field,
-  sortable,
-  currentSort,
-  sortDirection,
-  onSort
-}: TableHeaderProps) => {
-  const isActive = field === currentSort;
-  
+const TableHeader = ({ children, icon }: TableHeaderProps) => {
   return (
     <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-      {sortable && field ? (
-        <button 
-          className="flex items-center gap-2 hover:text-foreground focus:outline-none"
-          onClick={() => onSort && onSort(field)}
-        >
-          {icon && <span className="text-primary">{icon}</span>}
-          {children}
-          {isActive ? (
-            <span className="text-foreground">
-              {sortDirection === "asc" ? "↑" : "↓"}
-            </span>
-          ) : (
-            <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
-          )}
-        </button>
-      ) : (
-        <div className="flex items-center gap-2">
-          {icon && <span className="text-primary">{icon}</span>}
-          {children}
-        </div>
-      )}
+      <div className="flex items-center gap-2">
+        {icon && <span className="text-primary">{icon}</span>}
+        {children}
+      </div>
     </th>
   );
 };
@@ -279,6 +194,13 @@ const TableRow = ({
     }
     
     setBoxD(value);
+    
+    // Se BOX-D tem valor, automaticamente define status como PARCIAL
+    if (value && value.trim() !== "") {
+      setStatus("PARCIAL");
+      handleInputChange("status", "PARCIAL");
+    }
+    
     handleInputChange("BOX-D", value);
     onCheckConflicts();
   };
