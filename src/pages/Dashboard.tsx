@@ -93,14 +93,16 @@ const Dashboard = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Dashboard de Estatísticas</h1>
+        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+          Dashboard de Estatísticas
+        </h1>
         <p className="text-muted-foreground">
           Visualização de métricas e desempenho do sistema de gerenciamento de cargas
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card className="bg-gradient-to-br from-blue-50/50 to-blue-100/50 dark:from-blue-950/40 dark:to-blue-900/30 border-none shadow-lg">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total de Cargas</CardTitle>
           </CardHeader>
@@ -108,7 +110,7 @@ const Dashboard = () => {
             <div className="text-2xl font-bold">{data.length}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-emerald-50/50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/30 border-none shadow-lg">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Cargas Livres</CardTitle>
           </CardHeader>
@@ -118,7 +120,7 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-blue-50/50 to-blue-100/50 dark:from-blue-950/40 dark:to-blue-900/30 border-none shadow-lg">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Cargas Completas</CardTitle>
           </CardHeader>
@@ -128,7 +130,7 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-gradient-to-br from-purple-50/50 to-purple-100/50 dark:from-purple-950/40 dark:to-purple-900/30 border-none shadow-lg">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Cargas Parciais</CardTitle>
           </CardHeader>
@@ -140,10 +142,10 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="col-span-1">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="col-span-1 border-none shadow-lg bg-gradient-to-br from-background to-background/80">
           <CardHeader>
-            <CardTitle>Distribuição de Status</CardTitle>
+            <CardTitle className="text-lg font-semibold">Distribuição de Status</CardTitle>
           </CardHeader>
           <CardContent className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -153,7 +155,7 @@ const Dashboard = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  outerRadius={80}
+                  outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
@@ -162,16 +164,24 @@ const Dashboard = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [`${value} cargas`, 'Quantidade']} />
+                <Tooltip 
+                  formatter={(value) => [`${value} cargas`, 'Quantidade']}
+                  contentStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '8px',
+                    border: 'none',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }}
+                />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        <Card className="col-span-1">
+        <Card className="col-span-1 border-none shadow-lg bg-gradient-to-br from-background to-background/80">
           <CardHeader>
-            <CardTitle>Utilização de BOX-D (Top 10)</CardTitle>
+            <CardTitle className="text-lg font-semibold">Utilização de BOX-D (Top 10)</CardTitle>
           </CardHeader>
           <CardContent className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -184,21 +194,29 @@ const Dashboard = () => {
                   bottom: 5,
                 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
                 <XAxis dataKey="boxD" />
                 <YAxis />
-                <Tooltip formatter={(value) => [`${value} cargas`, 'Quantidade']} />
+                <Tooltip 
+                  formatter={(value) => [`${value} cargas`, 'Quantidade']}
+                  contentStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '8px',
+                    border: 'none',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                  }}
+                />
                 <Legend />
-                <Bar dataKey="count" name="Quantidade" fill="#3b82f6" />
+                <Bar dataKey="count" name="Quantidade" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
 
-      <Card>
+      <Card className="border-none shadow-lg bg-gradient-to-br from-background to-background/80">
         <CardHeader>
-          <CardTitle>Distribuição de Cargas por Hora</CardTitle>
+          <CardTitle className="text-lg font-semibold">Distribuição de Cargas por Hora</CardTitle>
         </CardHeader>
         <CardContent className="h-80">
           <ResponsiveContainer width="100%" height="100%">
@@ -211,12 +229,20 @@ const Dashboard = () => {
                 bottom: 5,
               }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
               <XAxis dataKey="hour" />
               <YAxis />
-              <Tooltip formatter={(value) => [`${value} cargas`, 'Quantidade']} />
+              <Tooltip 
+                formatter={(value) => [`${value} cargas`, 'Quantidade']}
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                  borderRadius: '8px',
+                  border: 'none',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}
+              />
               <Legend />
-              <Bar dataKey="count" name="Quantidade" fill="#8b5cf6" />
+              <Bar dataKey="count" name="Quantidade" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
