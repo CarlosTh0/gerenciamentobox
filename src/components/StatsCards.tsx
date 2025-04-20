@@ -15,7 +15,7 @@ const StatsCards = ({ stats }: StatsCardsProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard 
-        title="Total de Cegonheiras" 
+        title="Total de Viagem" 
         value={stats.total} 
         icon={<Package2 className="h-5 w-5" />}
         gradient="from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30"
@@ -42,9 +42,9 @@ const StatsCards = ({ stats }: StatsCardsProps) => {
         title="Completadas" 
         value={stats.completo} 
         icon={<CircleCheck className="h-5 w-5" />}
-        gradient="from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10"
-        iconColor="text-primary dark:text-primary"
-        textColor="text-primary-foreground dark:text-primary-foreground"
+        gradient="from-violet-200 to-violet-300 dark:from-violet-900/60 dark:to-violet-900/40"
+        iconColor="text-violet-700 dark:text-violet-300"
+        textColor="text-violet-800 dark:text-violet-200"
       />
     </div>
   );
