@@ -89,6 +89,11 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
               const sheet = workbook.Sheets[sheetName];
               const parsedData = XLSX.utils.sheet_to_json(sheet);
               
+              // Log headers para debug
+              if (parsedData.length > 0) {
+                console.log("Colunas disponíveis:", Object.keys(parsedData[0]));
+              }
+              
               const processedData = parsedData.map((row: any) => {
                 const dateTimeColumns = Object.keys(row).filter(key => 
                   key.toLowerCase().includes('data') || 
@@ -97,19 +102,34 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
                   key.toLowerCase().includes('time')
                 );
                 
-                // Check specifically for "Viagem TMS" column
+                // Busca específica pela coluna "Viagem TMS" (coluna G)
                 let viagemValue = "";
+                
+                // Verifica diretamente a coluna G ou "Viagem TMS" com prioridade
                 if (row["Viagem TMS"] !== undefined) {
-                  viagemValue = String(row["Viagem TMS"] || "");
+                  viagemValue = String(row["Viagem TMS"] || "").trim();
+                } else if (row["G"] !== undefined) {
+                  viagemValue = String(row["G"] || "").trim();
+                } else if (row["VIAGEM TMS"] !== undefined) {
+                  viagemValue = String(row["VIAGEM TMS"] || "").trim();
                 } else {
-                  // Fallback to previous method if "Viagem TMS" not found
-                  const viagemColumns = Object.keys(row).filter(key => 
-                    key.toLowerCase().includes('viagem') || 
+                  // Tenta encontrar pela palavra-chave 'viagem' e 'tms' juntos
+                  const viagemTmsColumns = Object.keys(row).filter(key => 
+                    key.toLowerCase().includes('viagem') && 
                     key.toLowerCase().includes('tms')
                   );
                   
-                  if (viagemColumns.length > 0) {
-                    viagemValue = String(row[viagemColumns[0]] || "");
+                  if (viagemTmsColumns.length > 0) {
+                    viagemValue = String(row[viagemTmsColumns[0]] || "").trim();
+                  } else {
+                    // Última tentativa com qualquer coluna que mencione viagem
+                    const viagemColumns = Object.keys(row).filter(key => 
+                      key.toLowerCase().includes('viagem')
+                    );
+                    
+                    if (viagemColumns.length > 0) {
+                      viagemValue = String(row[viagemColumns[0]] || "").trim();
+                    }
                   }
                 }
                 
@@ -224,13 +244,23 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
         const sheet = workbook.Sheets[sheetName];
         const parsedData = XLSX.utils.sheet_to_json(sheet);
         
+        // Log headers para debug
+        if (parsedData.length > 0) {
+          console.log("Colunas disponíveis:", Object.keys(parsedData[0]));
+        }
+        
         const processedData = parsedData.map((row: any) => {
           const horaValue = row.HORAS || row.HORA || "";
           
-          // Prioritize "Viagem TMS" column if it exists
+          // Busca específica pela coluna "Viagem TMS" (coluna G)
           let viagemValue = "";
+          
           if (row["Viagem TMS"] !== undefined) {
             viagemValue = String(row["Viagem TMS"] || "").trim();
+          } else if (row["G"] !== undefined) {
+            viagemValue = String(row["G"] || "").trim();
+          } else if (row["VIAGEM TMS"] !== undefined) {
+            viagemValue = String(row["VIAGEM TMS"] || "").trim();
           } else {
             viagemValue = String(row.VIAGEM || "").trim();
           }
