@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUp, Upload, FolderOpen } from "lucide-react";
@@ -96,10 +97,21 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
                   key.toLowerCase().includes('time')
                 );
                 
-                const viagemColumns = Object.keys(row).filter(key => 
-                  key.toLowerCase().includes('viagem') || 
-                  key.toLowerCase().includes('tms')
-                );
+                // Check specifically for "Viagem TMS" column
+                let viagemValue = "";
+                if (row["Viagem TMS"] !== undefined) {
+                  viagemValue = String(row["Viagem TMS"] || "");
+                } else {
+                  // Fallback to previous method if "Viagem TMS" not found
+                  const viagemColumns = Object.keys(row).filter(key => 
+                    key.toLowerCase().includes('viagem') || 
+                    key.toLowerCase().includes('tms')
+                  );
+                  
+                  if (viagemColumns.length > 0) {
+                    viagemValue = String(row[viagemColumns[0]] || "");
+                  }
+                }
                 
                 const frotaColumns = Object.keys(row).filter(key => 
                   key.toLowerCase().includes('frota') || 
@@ -108,15 +120,6 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
                 );
                 
                 const horaValue = dateTimeColumns.length > 0 ? extractTimeOnly(row[dateTimeColumns[0]]) : "";
-                
-                let viagemValue = "";
-                if (viagemColumns.length > 0) {
-                  const rawViagem = row[viagemColumns[0]];
-                  if (rawViagem !== undefined && rawViagem !== null) {
-                    viagemValue = String(rawViagem);
-                  }
-                }
-                
                 const frotaValue = frotaColumns.length > 0 ? String(row[frotaColumns[0]] || "") : "";
                 
                 return {
@@ -223,7 +226,15 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
         
         const processedData = parsedData.map((row: any) => {
           const horaValue = row.HORAS || row.HORA || "";
-          const viagemValue = String(row.VIAGEM || "").trim();
+          
+          // Prioritize "Viagem TMS" column if it exists
+          let viagemValue = "";
+          if (row["Viagem TMS"] !== undefined) {
+            viagemValue = String(row["Viagem TMS"] || "").trim();
+          } else {
+            viagemValue = String(row.VIAGEM || "").trim();
+          }
+          
           const frotaValue = String(row.FROTA || "").trim();
           const preBoxValue = row["PRÉ BOX"] || row["PRE BOX"] || row.PREBOX || "";
           const boxDValue = row["BOX DENTRO"] || row["BOX-D"] || "";
