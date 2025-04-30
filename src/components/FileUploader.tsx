@@ -294,7 +294,7 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
             TURNO: turno,
             "TIPO DE CARGA": tipoCarga,
             REGIAO: regiao,
-            status: situacao,
+            status: boxDValue ? "PARCIAL" : (situacao || "LIVRE"),
             TROCA: troca,
             "DATA PREV MANIFESTO": dataPrevManifesto,
             AGENDADA: agendada
