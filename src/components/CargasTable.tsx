@@ -371,8 +371,6 @@ const TableRow = ({
 };
 
 export default CargasTable;
-import { useEffect } from 'react';
-import { toast } from "@/components/ui/sonner";
 
 // Adicionar na função do componente:
 useEffect(() => {
