@@ -26,28 +26,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (data.length > 0) {
-      // Status distribution
-      const statusCount = {
-        LIVRE: 0,
-        COMPLETO: 0,
-        JA_FOI: 0,
-      };
-
-      data.forEach(item => {
-        if (item.status === "LIVRE") {
-          statusCount.LIVRE++;
-        } else if (item.status === "COMPLETO") {
-          statusCount.COMPLETO++;
-        } else if (item.status === "JA_FOI") {
-          statusCount.JA_FOI++;
-        }
-      });
-
-      setStatusData([
-        { name: 'LIVRE', value: statusCount.LIVRE, color: '#10b981' },
-        { name: 'COMPLETO', value: statusCount.COMPLETO, color: '#3b82f6' },
-        { name: 'JA FOI', value: statusCount.JA_FOI, color: '#f59e0b' },
-      ]);
+      // Status data removed
 
       // Box-D utilization
       const boxDCount: Record<string, number> = {};
@@ -143,41 +122,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="col-span-1 border-none shadow-lg bg-gradient-to-br from-background to-background/80">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Distribuição de Status</CardTitle>
-          </CardHeader>
-          <CardContent className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  formatter={(value) => [`${value} cargas`, 'Quantidade']}
-                  contentStyle={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                    borderRadius: '8px',
-                    border: 'none',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                  }}
-                />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        
 
         <Card className="col-span-1 border-none shadow-lg bg-gradient-to-br from-background to-background/80">
           <CardHeader>

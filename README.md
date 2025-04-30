@@ -1,8 +1,6 @@
-# Welcome to your Lovable project
+# Sistema de Gerenciamento de Cargas
 
 ## Project info
-
-**URL**: https://lovable.dev/projects/95fe1f35-5ebe-4df8-b3f4-45cf03b73018
 
 ## How can I edit this code?
 
