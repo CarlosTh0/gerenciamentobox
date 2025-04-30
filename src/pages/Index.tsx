@@ -30,12 +30,12 @@ const Index = () => {
   const [conflicts, setConflicts] = useState<{boxD: string; viagens: string[]}[]>([]);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [isSyncing, setIsSyncing] = useState(false);
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("TODOS");
   const [sortField, setSortField] = useState<string>("HORA");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  
+
   const [syncInterval, setSyncInterval] = useState(DEFAULT_SYNC_INTERVAL);
   const syncTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeUntilNextSyncRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -52,46 +52,60 @@ const Index = () => {
       }
     }
   }, []);
-  
+
   useEffect(() => {
     if (syncTimerRef.current) {
       clearInterval(syncTimerRef.current);
     }
-    
+
     if (timeUntilNextSyncRef.current) {
       clearInterval(timeUntilNextSyncRef.current);
     }
-    
+
     syncTimerRef.current = setInterval(() => {
       syncData();
     }, syncInterval);
-    
+
     setTimeRemaining(syncInterval);
     timeUntilNextSyncRef.current = setInterval(() => {
       setTimeRemaining(prev => Math.max(0, prev - 1000));
     }, 1000);
-    
+
     return () => {
       if (syncTimerRef.current) clearInterval(syncTimerRef.current);
       if (timeUntilNextSyncRef.current) clearInterval(timeUntilNextSyncRef.current);
     };
   }, [syncInterval]);
-  
+
   useEffect(() => {
     updateStats();
     checkConflicts();
-    
+
+    // Salva no localStorage
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+
+    // Cria backup com timestamp
+    const timestamp = new Date().toISOString();
+    localStorage.setItem(`${LOCAL_STORAGE_KEY}_backup_${timestamp}`, JSON.stringify(data));
+
+    // Mantém apenas os últimos 5 backups
+    const backupKeys = Object.keys(localStorage)
+      .filter(key => key.startsWith(`${LOCAL_STORAGE_KEY}_backup_`))
+      .sort()
+      .reverse();
+
+    backupKeys.slice(5).forEach(key => localStorage.removeItem(key));
+
     if (data.length > 0) {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
       setLastUpdate(new Date());
     }
-    
+
     applyFilters();
-  }, [data, searchTerm, statusFilter, sortField, sortDirection]);
-  
+  }, [data]);
+
   const applyFilters = () => {
     let result = [...data];
-    
+
     if (searchTerm) {
       result = result.filter(item => {
         const searchLower = searchTerm.toLowerCase();
@@ -103,22 +117,22 @@ const Index = () => {
         );
       });
     }
-    
+
     if (statusFilter !== "TODOS") {
       result = result.filter(item => item.status === statusFilter);
     }
-    
+
     result.sort((a, b) => {
       let valueA = a[sortField as keyof CargaItem];
       let valueB = b[sortField as keyof CargaItem];
-      
+
       const stringA = String(valueA || "");
       const stringB = String(valueB || "");
-      
+
       if (sortField === "HORA") {
         const formattedA = stringA.replace ? stringA.replace(":", "") : stringA || "";
         const formattedB = stringB.replace ? stringB.replace(":", "") : stringB || "";
-        
+
         if (formattedA < formattedB) {
           return sortDirection === "asc" ? -1 : 1;
         }
@@ -136,10 +150,10 @@ const Index = () => {
         return 0;
       }
     });
-    
+
     setFilteredData(result);
   };
-  
+
   const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -148,7 +162,7 @@ const Index = () => {
       setSortDirection("asc");
     }
   };
-  
+
   const handleFileUpload = (excelData: any[]) => {
     const processedData = excelData.map(row => {
       return {
@@ -161,7 +175,7 @@ const Index = () => {
         status: row.status || "LIVRE"
       };
     });
-    
+
     setData(processedData);
   };
 
@@ -174,11 +188,11 @@ const Index = () => {
       jaFoi: data.filter(item => item.status === "JA_FOI").length
     });
   };
-  
+
   const checkConflicts = () => {
     const boxDMap: Record<string, string[]> = {};
     const newConflicts: {boxD: string; viagens: string[]}[] = [];
-    
+
     data.forEach(item => {
       const boxD = item["BOX-D"];
       if (boxD && (item.status === "LIVRE" || item.status === "COMPLETO" || item.status === "PARCIAL")) {
@@ -190,7 +204,7 @@ const Index = () => {
         }
       }
     });
-    
+
     Object.keys(boxDMap).forEach(boxD => {
       if (boxDMap[boxD].length > 1) {
         newConflicts.push({
@@ -199,9 +213,9 @@ const Index = () => {
         });
       }
     });
-    
+
     setConflicts(newConflicts);
-    
+
     if (newConflicts.length > 0 && newConflicts.length !== conflicts.length) {
       toast.warning(`${newConflicts.length} conflitos detectados!`, {
         description: "Verifique os detalhes na área de alertas."
@@ -219,11 +233,11 @@ const Index = () => {
       "BOX-D": "",
       status: "LIVRE"
     };
-    
+
     setData([...data, newCarga]);
     toast.success("Nova carga adicionada!");
   };
-  
+
   const handleUpdateCarga = (index: number, updatedCarga: CargaItem) => {
     const dataIndex = data.findIndex(item => item.id === filteredData[index].id);
     if (dataIndex !== -1) {
@@ -232,7 +246,7 @@ const Index = () => {
       setData(newData);
     }
   };
-  
+
   const handleDeleteCarga = (index: number) => {
     const dataIndex = data.findIndex(item => item.id === filteredData[index].id);
     if (dataIndex !== -1) {
@@ -241,18 +255,18 @@ const Index = () => {
       setData(newData);
     }
   };
-  
+
   const syncData = () => {
     setIsSyncing(true);
-    
+
     try {
       const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-      
+
       if (storedData) {
         const parsedData = JSON.parse(storedData);
-        
+
         setData(parsedData);
-        
+
         toast.success("Sincronizado com sucesso", {
           description: `Dados atualizados em ${new Date().toLocaleTimeString()}`
         });
@@ -266,23 +280,23 @@ const Index = () => {
       setTimeRemaining(syncInterval);
     }
   };
-  
+
   const handleSync = () => {
     syncData();
   };
-  
+
   const formatTimeRemaining = () => {
     const minutes = Math.floor(timeRemaining / 60000);
     const seconds = Math.floor((timeRemaining % 60000) / 1000);
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
-  
+
   const handleChangeSyncInterval = (newInterval: number) => {
     setSyncInterval(newInterval);
     localStorage.setItem('sync-interval', String(newInterval));
     toast.success(`Intervalo de sincronização alterado para ${newInterval / 60000} minutos`);
   };
-  
+
   const handleExportToExcel = () => {
     try {
       // Preparar os dados para exportação
@@ -294,18 +308,18 @@ const Index = () => {
         "BOX-D": item["BOX-D"],
         STATUS: item.status
       }));
-      
+
       // Criar workbook e worksheet
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.json_to_sheet(dataToExport);
-      
+
       // Adicionar worksheet ao workbook
       XLSX.utils.book_append_sheet(wb, ws, "Cargas");
-      
+
       // Gerar arquivo e fazer download
       const fileName = `cargas_${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
-      
+
       toast.success("Exportação concluída", {
         description: `Dados exportados para ${fileName}`
       });
@@ -322,7 +336,7 @@ const Index = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <WelcomeMessage userName="Operador" />
           </div>
-          
+
           <FileUploader onUpload={handleFileUpload} />
 
           <StatsCards stats={{
@@ -353,7 +367,7 @@ const Index = () => {
                   <DownloadCloud size={16} />
                   Exportar Excel
                 </Button>
-                
+
                 <Button 
                   onClick={handleAddCarga}
                   className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600"
@@ -376,7 +390,7 @@ const Index = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                
+
                 <Select
                   value={statusFilter}
                   onValueChange={setStatusFilter}
@@ -392,7 +406,7 @@ const Index = () => {
                     <SelectItem value="JA_FOI">Já Foi</SelectItem>
                   </SelectContent>
                 </Select>
-                
+
                 <Select
                   value={sortField}
                   onValueChange={setSortField}
@@ -409,7 +423,7 @@ const Index = () => {
                     <SelectItem value="status">Status</SelectItem>
                   </SelectContent>
                 </Select>
-                
+
                 <Button 
                   variant="ghost" 
                   size="icon"

@@ -371,3 +371,26 @@ const TableRow = ({
 };
 
 export default CargasTable;
+import { useEffect } from 'react';
+import { toast } from "@/components/ui/sonner";
+
+// Adicionar na função do componente:
+useEffect(() => {
+  const checkOccupationTime = () => {
+    data.forEach(item => {
+      if (item["BOX-D"] && item.status !== "LIVRE") {
+        const occupationTime = new Date().getTime() - new Date(item.HORA).getTime();
+        const hoursOccupied = occupationTime / (1000 * 60 * 60);
+        
+        if (hoursOccupied > 4) {
+          toast.warning(`Box ${item["BOX-D"]} ocupado por mais de 4 horas`, {
+            description: `Viagem: ${item.VIAGEM}`
+          });
+        }
+      }
+    });
+  };
+
+  const interval = setInterval(checkOccupationTime, 1800000); // Verifica a cada 30 minutos
+  return () => clearInterval(interval);
+}, [data]);

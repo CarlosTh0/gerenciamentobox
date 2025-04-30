@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUp, Upload, FolderOpen } from "lucide-react";
@@ -19,22 +18,22 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
       if (decimalValue === undefined || decimalValue === null || decimalValue === "") {
         return "";
       }
-      
+
       const strValue = String(decimalValue);
-      
+
       if (strValue.includes(':')) {
         return strValue;
       }
-      
+
       const decimal = parseFloat(strValue);
       if (isNaN(decimal)) {
         return strValue;
       }
-      
+
       const totalMinutes = Math.round(decimal * 24 * 60);
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
-      
+
       return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     } catch (error) {
       console.error("Erro ao converter formato de hora:", error, decimalValue);
@@ -47,20 +46,20 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
       if (dateTimeValue === undefined || dateTimeValue === null || dateTimeValue === "") {
         return "";
       }
-      
+
       const strValue = String(dateTimeValue);
-      
+
       if (/^\d{1,2}:\d{2}$/.test(strValue)) {
         return strValue;
       }
-      
+
       if (strValue.includes('/') || strValue.includes('-')) {
         const dateObj = new Date(strValue);
         if (!isNaN(dateObj.getTime())) {
           return `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
         }
       }
-      
+
       return convertDecimalToTime(dateTimeValue);
     } catch (error) {
       console.error("Erro ao extrair horário:", error, dateTimeValue);
@@ -73,14 +72,14 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
       toast.error("Necessário pelo menos dois arquivos para combinar");
       return;
     }
-    
+
     setIsAutomaticLoading(true);
-    
+
     try {
       const promises = files.slice(0, 2).map(file => {
         return new Promise<any[]>((resolve, reject) => {
           const reader = new FileReader();
-          
+
           reader.onload = (e) => {
             try {
               const data = e.target?.result;
@@ -88,12 +87,12 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
               const sheetName = workbook.SheetNames[0];
               const sheet = workbook.Sheets[sheetName];
               const parsedData = XLSX.utils.sheet_to_json(sheet);
-              
+
               // Log headers para debug
               if (parsedData.length > 0) {
                 console.log("Colunas disponíveis:", Object.keys(parsedData[0]));
               }
-              
+
               const processedData = parsedData.map((row: any) => {
                 const dateTimeColumns = Object.keys(row).filter(key => 
                   key.toLowerCase().includes('data') || 
@@ -101,10 +100,10 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
                   key.toLowerCase().includes('date') || 
                   key.toLowerCase().includes('time')
                 );
-                
+
                 // Busca específica pela coluna "Viagem TMS" (coluna G)
                 let viagemValue = "";
-                
+
                 // Verifica diretamente a coluna G ou "Viagem TMS" com prioridade
                 if (row["Viagem TMS"] !== undefined) {
                   viagemValue = String(row["Viagem TMS"] || "").trim();
@@ -118,7 +117,7 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
                     key.toLowerCase().includes('viagem') && 
                     key.toLowerCase().includes('tms')
                   );
-                  
+
                   if (viagemTmsColumns.length > 0) {
                     viagemValue = String(row[viagemTmsColumns[0]] || "").trim();
                   } else {
@@ -126,22 +125,22 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
                     const viagemColumns = Object.keys(row).filter(key => 
                       key.toLowerCase().includes('viagem')
                     );
-                    
+
                     if (viagemColumns.length > 0) {
                       viagemValue = String(row[viagemColumns[0]] || "").trim();
                     }
                   }
                 }
-                
+
                 const frotaColumns = Object.keys(row).filter(key => 
                   key.toLowerCase().includes('frota') || 
                   key.toLowerCase().includes('veiculo') || 
                   key.toLowerCase().includes('veículo')
                 );
-                
+
                 const horaValue = dateTimeColumns.length > 0 ? extractTimeOnly(row[dateTimeColumns[0]]) : "";
                 const frotaValue = frotaColumns.length > 0 ? String(row[frotaColumns[0]] || "") : "";
-                
+
                 return {
                   HORA: horaValue,
                   VIAGEM: viagemValue,
@@ -151,38 +150,38 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
                   status: "LIVRE"
                 };
               });
-              
+
               resolve(processedData);
             } catch (error) {
               console.error("Erro ao processar arquivo:", error);
               reject(error);
             }
           };
-          
+
           reader.onerror = () => {
             reject(new Error("Erro ao ler o arquivo"));
           };
-          
+
           reader.readAsBinaryString(file);
         });
       });
-      
+
       const [data1, data2] = await Promise.all(promises);
-      
+
       const combinedData = [...data1, ...data2];
-      
+
       combinedData.sort((a, b) => {
         const horaA = a.HORA.replace(':', '');
         const horaB = b.HORA.replace(':', '');
         return horaA.localeCompare(horaB);
       });
-      
+
       onUpload(combinedData);
-      
+
       const fileNames = files.slice(0, 2).map(f => f.name).join(', ');
       setFileName(`Combinado: ${fileNames}`);
       toast.success("Arquivos combinados com sucesso!");
-      
+
     } catch (error) {
       console.error("Erro ao combinar arquivos:", error);
       toast.error("Erro ao processar os arquivos");
@@ -197,26 +196,26 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
       input.type = 'file';
       input.multiple = true;
       input.accept = '.xlsx,.xls';
-      
+
       input.onchange = async (e) => {
         const files = (e.target as HTMLInputElement).files;
-        
+
         if (!files || files.length < 2) {
           toast.error("Selecione pelo menos dois arquivos Excel");
           return;
         }
-        
+
         const filesArray = Array.from(files);
-        
+
         filesArray.sort((a, b) => {
           return b.lastModified - a.lastModified;
         });
-        
+
         const recentFiles = filesArray.slice(0, 2);
-        
+
         await processTwoFiles(recentFiles);
       };
-      
+
       input.click();
     } catch (error) {
       console.error("Erro na busca automática:", error);
@@ -235,7 +234,7 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
   const processExcelFile = (file: File) => {
     setIsLoading(true);
     const reader = new FileReader();
-    
+
     reader.onload = (e) => {
       try {
         const data = e.target?.result;
@@ -243,18 +242,21 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const parsedData = XLSX.utils.sheet_to_json(sheet);
-        
+
         // Log headers para debug
         if (parsedData.length > 0) {
           console.log("Colunas disponíveis:", Object.keys(parsedData[0]));
         }
-        
+
+        const viagensSet = new Set();
+        const duplicateViagens: string[] = [];
+
         const processedData = parsedData.map((row: any) => {
           const horaValue = row.HORAS || row.HORA || "";
-          
+
           // Busca específica pela coluna "Viagem TMS" (coluna G)
           let viagemValue = "";
-          
+
           if (row["Viagem TMS"] !== undefined) {
             viagemValue = String(row["Viagem TMS"] || "").trim();
           } else if (row["G"] !== undefined) {
@@ -264,11 +266,11 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
           } else {
             viagemValue = String(row.VIAGEM || "").trim();
           }
-          
+
           const frotaValue = String(row.FROTA || "").trim();
           const preBoxValue = row["PRÉ BOX"] || row["PRE BOX"] || row.PREBOX || "";
           const boxDValue = row["BOX DENTRO"] || row["BOX-D"] || "";
-          
+
           const data = row.DATA || "";
           const viagemAntiga = row["VIAGEM ANTIGA"] || "";
           const km = row.KM || "";
@@ -280,7 +282,13 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
           const troca = row.TROCA || "";
           const dataPrevManifesto = row["Data Prev. Do Manifesto"] || "";
           const agendada = row.AGENDADA || "";
-          
+
+          if (!viagensSet.has(viagemValue)) {
+            viagensSet.add(viagemValue);
+          } else {
+            duplicateViagens.push(viagemValue);
+          }
+
           return {
             DATA: data,
             HORA: horaValue,
@@ -300,7 +308,11 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
             AGENDADA: agendada
           };
         });
-        
+
+        if (duplicateViagens.length > 0) {
+          toast.warn(`As seguintes viagens estão duplicadas: ${duplicateViagens.join(', ')}`);
+        }
+
         onUpload(processedData);
         toast.success("Planilha carregada com sucesso!");
       } catch (error) {
@@ -310,12 +322,12 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
         setIsLoading(false);
       }
     };
-    
+
     reader.onerror = () => {
       toast.error("Erro ao ler o arquivo");
       setIsLoading(false);
     };
-    
+
     reader.readAsBinaryString(file);
   };
 
@@ -338,7 +350,7 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
           </div>
           <span className="ml-3 text-gray-600 text-sm truncate max-w-xs">{fileName}</span>
         </div>
-        
+
         <div className="flex flex-wrap gap-3 w-full sm:w-auto">
           <Button
             onClick={handleAutomaticFileSearch}
@@ -348,7 +360,7 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
             <FolderOpen size={16} />
             {isAutomaticLoading ? "Processando..." : "Buscar Arquivos Automaticamente"}
           </Button>
-          
+
           <Button
             onClick={() => toast.info("Utilize o botão 'Escolher arquivo' para carregar uma planilha")}
             className="w-full sm:w-auto flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
