@@ -8,6 +8,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",
     port: 8080,
+    hmr: {
+      clientPort: 443,
+      timeout: 120000
+    },
   },
   plugins: [
     react(),
