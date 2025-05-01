@@ -35,6 +35,26 @@ const CargasTable = ({
   sortField,
   sortDirection
 }: CargasTableProps) => {
+  useEffect(() => {
+    const checkOccupationTime = () => {
+      data.forEach(item => {
+        if (item["BOX-D"] && item.status !== "LIVRE") {
+          const occupationTime = new Date().getTime() - new Date(item.HORA).getTime();
+          const hoursOccupied = occupationTime / (1000 * 60 * 60);
+          
+          if (hoursOccupied > 4) {
+            toast.warning(`Box ${item["BOX-D"]} ocupado por mais de 4 horas`, {
+              description: `Viagem: ${item.VIAGEM}`
+            });
+          }
+        }
+      });
+    };
+
+    const interval = setInterval(checkOccupationTime, 1800000); // Verifica a cada 30 minutos
+    return () => clearInterval(interval);
+  }, [data]);
+
   return (
     <Card className="overflow-hidden border border-border rounded-lg shadow-sm">
       <div className="overflow-x-auto">
@@ -370,34 +390,4 @@ const TableRow = ({
   );
 };
 
-const CargasTable = ({ 
-  data, 
-  onUpdateCarga, 
-  onCheckConflicts, 
-  onDeleteCarga,
-  onSort,
-  sortField,
-  sortDirection
-}: CargasTableProps) => {
-  useEffect(() => {
-    const checkOccupationTime = () => {
-      data.forEach(item => {
-        if (item["BOX-D"] && item.status !== "LIVRE") {
-          const occupationTime = new Date().getTime() - new Date(item.HORA).getTime();
-          const hoursOccupied = occupationTime / (1000 * 60 * 60);
-          
-          if (hoursOccupied > 4) {
-            toast.warning(`Box ${item["BOX-D"]} ocupado por mais de 4 horas`, {
-              description: `Viagem: ${item.VIAGEM}`
-            });
-          }
-        }
-      });
-    };
-
-    const interval = setInterval(checkOccupationTime, 1800000); // Verifica a cada 30 minutos
-    return () => clearInterval(interval);
-  }, [data]);
-
-  return (
-    <Card className="overflow-hidden border border-border rounded-lg shadow-sm">
+export default CargasTable;
