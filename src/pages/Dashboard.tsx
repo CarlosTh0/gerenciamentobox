@@ -121,9 +121,7 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      
-    
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
 
         <Card className="col-span-1 border-none shadow-lg bg-gradient-to-br from-background to-background/80">
