@@ -73,6 +73,47 @@ const CargasTable = ({
 
   return (
     <Card className="overflow-hidden border border-border rounded-lg shadow-sm">
+      <div className="p-4 border-b border-border">
+        <div className="flex flex-wrap gap-2">
+          <Input
+            placeholder="Filtrar por Viagem"
+            className="w-40"
+            onChange={(e) => {
+              const filtered = data.filter(item => 
+                item.VIAGEM.toLowerCase().includes(e.target.value.toLowerCase())
+              );
+              // Implement filter logic
+            }}
+          />
+          <Input
+            placeholder="Filtrar por Frota"
+            className="w-40"
+            onChange={(e) => {
+              const filtered = data.filter(item => 
+                item.FROTA.toLowerCase().includes(e.target.value.toLowerCase())
+              );
+              // Implement filter logic
+            }}
+          />
+          <Select onValueChange={(value) => {
+            if (value !== "todos") {
+              const filtered = data.filter(item => item.status === value);
+              // Implement filter logic
+            }
+          }}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos</SelectItem>
+              <SelectItem value="LIVRE">Livre</SelectItem>
+              <SelectItem value="PARCIAL">Parcial</SelectItem>
+              <SelectItem value="COMPLETO">Completo</SelectItem>
+              <SelectItem value="JA_FOI">Já Foi</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       <div className="overflow-x-auto">
         <div className="max-h-[600px] overflow-y-auto">
           <table className="w-full">
