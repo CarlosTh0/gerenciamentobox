@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Check, AlertCircle, Truck, Box, MapPin, Trash2, Clock } from "lucide-react";
@@ -57,7 +56,7 @@ const CargasTable = ({
         if (item["BOX-D"] && item.status !== "LIVRE") {
           const occupationTime = new Date().getTime() - new Date(item.HORA).getTime();
           const hoursOccupied = occupationTime / (1000 * 60 * 60);
-          
+
           if (hoursOccupied > 4) {
             toast.warning(`Box ${item["BOX-D"]} ocupado por mais de 4 horas`, {
               description: `Viagem: ${item.VIAGEM}`
@@ -131,29 +130,29 @@ const TableRow = ({
   const [boxD, setBoxD] = useState(row["BOX-D"] || "");
   const [hora, setHora] = useState(row.HORA || "");
   const [prebox, setPrebox] = useState(row.PREBOX || "");
-  
+
   const convertDecimalToTime = (decimalValue: any): string => {
     if (decimalValue === undefined || decimalValue === null || decimalValue === "") {
       return "";
     }
-    
+
     try {
       const strValue = String(decimalValue);
-      
+
       if (strValue.includes(':')) {
         return strValue;
       }
-      
+
       const decimal = parseFloat(strValue);
-      
+
       if (isNaN(decimal)) {
         return strValue;
       }
-      
+
       const totalMinutes = Math.round(decimal * 24 * 60);
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
-      
+
       return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     } catch (error) {
       console.error("Error converting decimal to time:", error, decimalValue);
@@ -169,16 +168,16 @@ const TableRow = ({
 
   const validatePrebox = (value: string) => {
     if (value === "") return true;
-    
+
     const preboxNumber = parseInt(value);
     if (isNaN(preboxNumber)) return false;
-    
+
     return (
       (preboxNumber >= 300 && preboxNumber <= 356) || 
       (preboxNumber >= 50 && preboxNumber <= 56)
     );
   };
-  
+
   useEffect(() => {
     if (status === "JA_FOI" && row["BOX-D"]) {
       toast.info(`BOX-D ${row["BOX-D"]} está disponível!`, {
@@ -190,7 +189,7 @@ const TableRow = ({
   useEffect(() => {
     setStatus(row.status);
     setBoxD(row["BOX-D"]);
-    
+
     try {
       const formattedHora = convertDecimalToTime(row.HORA);
       setHora(formattedHora);
@@ -198,7 +197,7 @@ const TableRow = ({
       console.error("Erro ao converter hora:", error, row.HORA);
       setHora(row.HORA || "");
     }
-    
+
     setPrebox(row.PREBOX);
   }, [row]);
 
@@ -214,14 +213,14 @@ const TableRow = ({
       });
       return;
     }
-    
+
     setBoxD(value);
-    
+
     if (value && value.trim() !== "") {
       setStatus("PARCIAL");
       handleInputChange("status", "PARCIAL");
     }
-    
+
     handleInputChange("BOX-D", value);
     onCheckConflicts();
   };
@@ -229,7 +228,7 @@ const TableRow = ({
   const handlePreboxChange = (value: string) => {
     setPrebox(value);
     handleInputChange("PREBOX", value);
-    
+
     if (!validatePrebox(value) && value !== "") {
       toast.warning("Número de PREBOX recomendado: 300-356 ou 50-56", {
         description: "Você pode continuar, mas o valor está fora do padrão."
@@ -250,10 +249,10 @@ const TableRow = ({
       }
       return;
     }
-    
+
     if (value) {
       const digitsOnly = value.replace(/[^\d]/g, '');
-      
+
       if (digitsOnly.length <= 2) {
         setHora(digitsOnly);
       } else {
@@ -264,7 +263,7 @@ const TableRow = ({
     } else {
       setHora('');
     }
-    
+
     handleInputChange("HORA", hora);
   };
 
@@ -272,7 +271,7 @@ const TableRow = ({
     setStatus(newStatus);
     handleInputChange("status", newStatus);
   };
-  
+
   const handleDelete = () => {
     if (onDeleteCarga) {
       if (window.confirm("Tem certeza que deseja excluir esta carga?")) {
@@ -281,7 +280,7 @@ const TableRow = ({
       }
     }
   };
-  
+
   const getStatusStyles = (status: string) => {
     switch(status) {
       case "LIVRE":
@@ -311,7 +310,7 @@ const TableRow = ({
         return null;
     }
   };
-  
+
   return (
     <tr className="hover:bg-muted/30 transition-colors">
       <td className="px-6 py-4">
