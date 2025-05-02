@@ -34,6 +34,13 @@ export default function AppLayout() {
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
+    
+    // Esconder sidebar automaticamente em mobile
+    if (isMobile) {
+      setSidebarVisible(false);
+    } else {
+      setSidebarVisible(true);
+    }
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
