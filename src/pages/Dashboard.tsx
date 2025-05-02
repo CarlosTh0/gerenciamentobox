@@ -121,34 +121,7 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <Card className="mb-6 border-none shadow-lg bg-gradient-to-br from-background to-background/80">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">BOXs Disponíveis</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-wrap gap-2">
-          {Array.from({length: 32}, (_, i) => i + 1).map(boxNumber => {
-            const isOccupied = data.some(item => 
-              item["BOX-D"] === String(boxNumber) && 
-              item.status !== "JA_FOI" && 
-              item.status !== "LIVRE"
-            );
-            return (
-              <div
-                key={boxNumber}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium ${
-                  isOccupied 
-                    ? 'bg-destructive/10 text-destructive' 
-                    : 'bg-primary/10 text-primary'
-                }`}
-              >
-                {boxNumber}
-              </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+      
     
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
