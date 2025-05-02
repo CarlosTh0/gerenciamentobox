@@ -357,11 +357,11 @@ const Index = () => {
                 </span>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button 
                   onClick={handleExportToExcel}
                   variant="outline"
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 whitespace-nowrap"
                   size="sm"
                 >
                   <DownloadCloud size={16} />
@@ -370,7 +370,7 @@ const Index = () => {
 
                 <Button 
                   onClick={handleAddCarga}
-                  className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600"
+                  className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 whitespace-nowrap"
                   size="sm"
                 >
                   <PlusCircle size={16} />
