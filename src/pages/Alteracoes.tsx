@@ -6,13 +6,22 @@ export default function Alteracoes() {
   const [alteracoes, setAlteracoes] = useState<Alteracao[]>([]);
 
   useEffect(() => {
-    // Aqui você pode carregar as alterações do localStorage ou de uma API
     const alteracoesFromStorage = localStorage.getItem('alteracoes');
     if (alteracoesFromStorage) {
-      setAlteracoes(JSON.parse(alteracoesFromStorage).map((a: any) => ({
-        ...a,
-        timestamp: new Date(a.timestamp)
-      })));
+      try {
+        const parsedAlteracoes = JSON.parse(alteracoesFromStorage);
+        const processedAlteracoes = parsedAlteracoes
+          .map((a: any) => ({
+            ...a,
+            timestamp: new Date(a.timestamp)
+          }))
+          .sort((a: Alteracao, b: Alteracao) => 
+            b.timestamp.getTime() - a.timestamp.getTime()
+          );
+        setAlteracoes(processedAlteracoes);
+      } catch (error) {
+        console.error('Erro ao processar alterações:', error);
+      }
     }
   }, []);
 
