@@ -3,6 +3,10 @@ import { Card } from "@/components/ui/card";
 import { Check, AlertCircle, Truck, Box, MapPin, Trash2, Clock } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react"; // Assuming this import is needed
+import { Search } from "lucide-react"; // Assuming this import is needed
+import { FileSpreadsheet } from "lucide-react"; // Assuming this import is needed
+
 
 export interface CargaItem {
   id?: string;
