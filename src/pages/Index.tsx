@@ -223,6 +223,19 @@ const Index = () => {
     }
   };
 
+  const saveAlteracao = (tipo: 'criação' | 'atualização' | 'exclusão', dados: any) => {
+    const alteracao = {
+      id: uuidv4(),
+      timestamp: new Date(),
+      tipo,
+      dados
+    };
+    
+    const alteracoes = JSON.parse(localStorage.getItem('alteracoes') || '[]');
+    alteracoes.push(alteracao);
+    localStorage.setItem('alteracoes', JSON.stringify(alteracoes));
+  };
+
   const handleAddCarga = () => {
     const newCarga: CargaItem = {
       id: uuidv4(),
@@ -235,6 +248,7 @@ const Index = () => {
     };
 
     setData([...data, newCarga]);
+    saveAlteracao('criação', newCarga);
     toast.success("Nova carga adicionada!");
   };
 
@@ -244,15 +258,18 @@ const Index = () => {
       const newData = [...data];
       newData[dataIndex] = updatedCarga;
       setData(newData);
+      saveAlteracao('atualização', updatedCarga);
     }
   };
 
   const handleDeleteCarga = (index: number) => {
     const dataIndex = data.findIndex(item => item.id === filteredData[index].id);
     if (dataIndex !== -1) {
+      const deletedCarga = data[dataIndex];
       const newData = [...data];
       newData.splice(dataIndex, 1);
       setData(newData);
+      saveAlteracao('exclusão', deletedCarga);
     }
   };
 
