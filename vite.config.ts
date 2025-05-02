@@ -5,19 +5,19 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 export default defineConfig({
-  plugins: [react(), componentTagger()],
+  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
   server: {
-    host: "0.0.0.0",
-    port: 8080,
+    host: true,
+    port: 5000,
     hmr: {
-      host: "0.0.0.0",
-      port: 8080,
-      protocol: "ws"
+      clientPort: 443,
+      path: "/@hmr",
+      timeout: 5000
     }
   }
 });
