@@ -58,8 +58,9 @@ const CargasTable = ({
   return (
     <Card className="overflow-hidden border border-border rounded-lg shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
+        <div className="max-h-[600px] overflow-y-auto">
+          <table className="w-full">
+          <thead className="sticky top-0 z-10">
             <tr className="bg-muted/50 border-b border-border">
               <TableHeader icon={<Clock className="h-4 w-4" />}>HORA</TableHeader>
               <TableHeader icon={<Truck className="h-4 w-4" />}>VIAGEM</TableHeader>
