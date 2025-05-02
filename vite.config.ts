@@ -12,8 +12,11 @@ export default defineConfig({
     },
   },
   server: {
-    host: "0.0.0.0",
+    host: true,
     port: 8080,
-    hmr: true
+    hmr: {
+      clientPort: 443,
+      protocol: 'wss'
+    }
   }
 });
