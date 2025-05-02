@@ -26,6 +26,22 @@ interface CargasTableProps {
   sortDirection?: "asc" | "desc";
 }
 
+interface TableHeaderProps {
+  children: React.ReactNode;
+  icon?: React.ReactNode;
+}
+
+const TableHeader = ({ children, icon }: TableHeaderProps) => {
+  return (
+    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      <div className="flex items-center gap-2">
+        {icon && <span className="text-primary">{icon}</span>}
+        {children}
+      </div>
+    </th>
+  );
+};
+
 const CargasTable = ({ 
   data, 
   onUpdateCarga, 
@@ -51,7 +67,7 @@ const CargasTable = ({
       });
     };
 
-    const interval = setInterval(checkOccupationTime, 1800000); // Verifica a cada 30 minutos
+    const interval = setInterval(checkOccupationTime, 1800000);
     return () => clearInterval(interval);
   }, [data]);
 
@@ -60,56 +76,41 @@ const CargasTable = ({
       <div className="overflow-x-auto">
         <div className="max-h-[600px] overflow-y-auto">
           <table className="w-full">
-          <thead className="sticky top-0 z-10">
-            <tr className="bg-muted/50 border-b border-border">
-              <TableHeader icon={<Clock className="h-4 w-4" />}>HORA</TableHeader>
-              <TableHeader icon={<Truck className="h-4 w-4" />}>VIAGEM</TableHeader>
-              <TableHeader icon={<Truck className="h-4 w-4" />}>FROTA</TableHeader>
-              <TableHeader icon={<Box className="h-4 w-4" />}>PREBOX</TableHeader>
-              <TableHeader icon={<MapPin className="h-4 w-4" />}>BOX-D</TableHeader>
-              <TableHeader icon={<Check className="h-4 w-4" />}>STATUS</TableHeader>
-              <TableHeader>AÇÕES</TableHeader>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {data.length > 0 ? (
-              data.map((row, index) => (
-                <TableRow 
-                  key={row.id || index} 
-                  row={row} 
-                  index={index} 
-                  onUpdateCarga={onUpdateCarga}
-                  onCheckConflicts={onCheckConflicts}
-                  onDeleteCarga={onDeleteCarga}
-                />
-              ))
-            ) : (
-              <tr>
-                <td colSpan={7} className="text-center py-8 text-muted-foreground">
-                  Nenhum dado disponível. Carregue uma planilha ou adicione uma nova carga.
-                </td>
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-muted/50 border-b border-border">
+                <TableHeader icon={<Clock className="h-4 w-4" />}>HORA</TableHeader>
+                <TableHeader icon={<Truck className="h-4 w-4" />}>VIAGEM</TableHeader>
+                <TableHeader icon={<Truck className="h-4 w-4" />}>FROTA</TableHeader>
+                <TableHeader icon={<Box className="h-4 w-4" />}>PREBOX</TableHeader>
+                <TableHeader icon={<MapPin className="h-4 w-4" />}>BOX-D</TableHeader>
+                <TableHeader icon={<Check className="h-4 w-4" />}>STATUS</TableHeader>
+                <TableHeader>AÇÕES</TableHeader>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {data.length > 0 ? (
+                data.map((row, index) => (
+                  <TableRow 
+                    key={row.id || index} 
+                    row={row} 
+                    index={index} 
+                    onUpdateCarga={onUpdateCarga}
+                    onCheckConflicts={onCheckConflicts}
+                    onDeleteCarga={onDeleteCarga}
+                  />
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                    Nenhum dado disponível. Carregue uma planilha ou adicione uma nova carga.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </Card>
-  );
-};
-
-interface TableHeaderProps {
-  children: React.ReactNode;
-  icon?: React.ReactNode;
-}
-
-const TableHeader = ({ children, icon }: TableHeaderProps) => {
-  return (
-    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-      <div className="flex items-center gap-2">
-        {icon && <span className="text-primary">{icon}</span>}
-        {children}
-      </div>
-    </th>
   );
 };
 
@@ -216,7 +217,6 @@ const TableRow = ({
     
     setBoxD(value);
     
-    // Se BOX-D tem valor, automaticamente define status como PARCIAL
     if (value && value.trim() !== "") {
       setStatus("PARCIAL");
       handleInputChange("status", "PARCIAL");
