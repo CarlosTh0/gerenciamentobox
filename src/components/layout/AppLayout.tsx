@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { useTheme } from "@/hooks/useTheme";
@@ -18,7 +17,7 @@ import {
   SidebarTrigger
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Sun, Moon, LayoutDashboard, Truck, RefreshCw, PanelLeftClose, PanelLeft } from "lucide-react";
+import { Sun, Moon, LayoutDashboard, Truck, RefreshCw, PanelLeftClose, PanelLeft, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -34,7 +33,7 @@ export default function AppLayout() {
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-    
+
     // Esconder sidebar automaticamente em mobile
     if (isMobile) {
       setSidebarVisible(false);
@@ -109,6 +108,17 @@ export default function AppLayout() {
                     <Link to="/dashboard" className="flex items-center gap-3">
                       <LayoutDashboard className="h-4 w-4" />
                       <span>Dashboard</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={location.pathname === '/alteracoes'}
+                  >
+                    <Link to="/alteracoes" className="flex items-center gap-3">
+                      <History className="h-4 w-4" />
+                      <span>Alterações</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
