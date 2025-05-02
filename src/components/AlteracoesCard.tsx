@@ -1,51 +1,50 @@
 
-import { Card } from "@/components/ui/card"
-import { formatDistanceToNow } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { Card } from "@/components/ui/card";
 
 export interface Alteracao {
   id: string;
   timestamp: Date;
-  tipo: 'atualização' | 'criação' | 'exclusão';
+  tipo: 'criação' | 'atualização' | 'exclusão';
   dados: {
     FROTA?: string;
-    VIAGEM?: string;
     "BOX-D"?: string;
-    [key: string]: string | undefined;
+    VIAGEM?: string;
+    [key: string]: any;
   };
 }
 
-interface AlteracoesCardProps {
-  alteracoes: Alteracao[];
-}
+export default function AlteracoesCard({ alteracoes }: { alteracoes: Alteracao[] }) {
+  if (!alteracoes || alteracoes.length === 0) {
+    return (
+      <Card className="p-4">
+        <p className="text-center text-muted-foreground">Nenhuma alteração registrada</p>
+      </Card>
+    );
+  }
 
-export default function AlteracoesCard({ alteracoes }: AlteracoesCardProps) {
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4">
       {alteracoes.map((alteracao) => (
-        <Card key={alteracao.id} className="p-4 hover:shadow-md transition-shadow">
-          <div className="flex flex-col space-y-2">
-            <div className="flex justify-between items-start">
-              <span className={`text-sm font-medium px-2 py-1 rounded-full ${
-                alteracao.tipo === 'atualização' ? 'bg-blue-100 text-blue-700' :
-                alteracao.tipo === 'criação' ? 'bg-green-100 text-green-700' :
-                'bg-red-100 text-red-700'
-              }`}>
-                {alteracao.tipo.charAt(0).toUpperCase() + alteracao.tipo.slice(1)}
+        <Card key={alteracao.id} className="p-4 bg-muted/30">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium capitalize">
+                {alteracao.tipo}
               </span>
-              <span className="text-sm text-gray-500">
-                {formatDistanceToNow(alteracao.timestamp, { addSuffix: true, locale: ptBR })}
+              <span className="text-xs text-muted-foreground">
+                {new Date(alteracao.timestamp).toLocaleString()}
               </span>
             </div>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              {Object.entries(alteracao.dados).map(([chave, valor]) => (
-                valor && (
-                  <div key={chave} className="flex flex-col">
-                    <span className="text-sm font-medium text-gray-600">{chave}:</span>
-                    <span className="text-lg">{valor}</span>
-                  </div>
-                )
-              ))}
+            <div className="space-y-1 text-sm">
+              {alteracao.dados.FROTA && (
+                <p>FROTA: <span className="font-medium">{alteracao.dados.FROTA}</span></p>
+              )}
+              {alteracao.dados["BOX-D"] && (
+                <p>BOX-D: <span className="font-medium">{alteracao.dados["BOX-D"]}</span></p>
+              )}
+              {alteracao.dados.VIAGEM && (
+                <p>VIAGEM: <span className="font-medium">{alteracao.dados.VIAGEM}</span></p>
+              )}
             </div>
           </div>
         </Card>
