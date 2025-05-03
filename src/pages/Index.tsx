@@ -237,9 +237,14 @@ const Index = () => {
   };
 
   const handleAddCarga = () => {
+    const currentTime = new Date().toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
     const newCarga: CargaItem = {
       id: uuidv4(),
-      HORA: "",
+      HORA: currentTime,
       VIAGEM: "",
       FROTA: "",
       PREBOX: "",
