@@ -21,6 +21,10 @@ import { Sun, Moon, LayoutDashboard, Truck, RefreshCw, PanelLeftClose, PanelLeft
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getCurrentUser, logout as authLogout } from "@/lib/auth";
+import ApiIntegration from "@/components/ApiIntegration";
+import UserRegister from "@/components/UserRegister";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function AppLayout() {
   const { theme, setTheme } = useTheme();
@@ -29,6 +33,7 @@ export default function AppLayout() {
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const isMobile = useIsMobile();
+  const user = getCurrentUser();
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -80,10 +85,13 @@ export default function AppLayout() {
     <SidebarProvider defaultOpen={sidebarVisible} open={sidebarVisible} onOpenChange={setSidebarVisible}>
       <div className={`min-h-screen flex w-full ${theme === 'dark' ? 'dark' : ''}`}>
         <Sidebar>
-          <SidebarHeader className="flex h-16 items-center border-b px-6">
+          <SidebarHeader className="flex h-16 items-center border-b px-6 justify-between">
             <span className="text-lg font-semibold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
               Sistema de Cargas
             </span>
+            {user && (
+              <span className="text-xs text-muted-foreground">{user.name} ({user.role})</span>
+            )}
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
@@ -124,6 +132,37 @@ export default function AppLayout() {
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroup>
+            {user?.role === "admin" && (
+              <>
+                <SidebarGroup>
+                  <SidebarGroupLabel>Administração</SidebarGroupLabel>
+                  <div className="flex flex-col gap-2 p-2">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full mb-1">Configurar API Externa</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>URL da API externa</DialogTitle>
+                        </DialogHeader>
+                        <ApiIntegration onImport={() => {}} />
+                      </DialogContent>
+                    </Dialog>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full">Cadastrar Novo Usuário</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Cadastrar Novo Usuário</DialogTitle>
+                        </DialogHeader>
+                        <UserRegister />
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </SidebarGroup>
+              </>
+            )}
           </SidebarContent>
           <SidebarFooter className="p-4 border-t">
             <div className="flex flex-col gap-2">
@@ -155,6 +194,17 @@ export default function AppLayout() {
                     Última sincronização: {lastSync.toLocaleTimeString()}
                   </div>
                 )}
+              </div>
+              {/* Espaço extra antes do botão de sair */}
+              <div className="mt-6">
+                <Button 
+                  variant="destructive" 
+                  size="sm" 
+                  className="w-full" 
+                  onClick={() => { authLogout(); window.location.reload(); }}
+                >
+                  Sair
+                </Button>
               </div>
             </div>
           </SidebarFooter>

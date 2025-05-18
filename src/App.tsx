@@ -7,22 +7,29 @@ import Dashboard from "@/pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import AppLayout from "./components/layout/AppLayout";
 import Alteracoes from "@/pages/Alteracoes"; // Added import for Alteracoes page
+import LoginPage from "@/pages/Login";
+import { getCurrentUser } from "@/lib/auth";
 
 const queryClient = new QueryClient();
 
 const App = () => {
+  const user = getCurrentUser();
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Toaster />
         <Sonner />
         <Routes>
-          <Route element={<AppLayout />}>
-            <Route path="/" element={<Index />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/alteracoes" element={<Alteracoes />} /> {/* Added route for Alteracoes */}
-          </Route>
-          <Route path="*" element={<NotFound />} />
+          {!user ? (
+            <Route path="*" element={<LoginPage />} />
+          ) : (
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/alteracoes" element={<Alteracoes />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          )}
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

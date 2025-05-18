@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import * as XLSX from 'xlsx';
+import { getCurrentUser } from "@/lib/auth";
 
 const LOCAL_STORAGE_KEY = 'cargo-management-data';
 const DEFAULT_SYNC_INTERVAL = 600000; // 10 minutos
@@ -40,6 +41,8 @@ const Index = () => {
   const syncTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeUntilNextSyncRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<number>(syncInterval);
+
+  const user = getCurrentUser();
 
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -351,12 +354,35 @@ const Index = () => {
     }
   };
 
+  // Função para importar dados da API externa e mesclar com os dados atuais
+  const handleApiImport = (apiData: any[]) => {
+    // Adapta os dados recebidos da API para o formato da tabela
+    const newCargas = apiData.map((row: any) => ({
+      id: uuidv4(),
+      HORA: row.HORA || row.hora || "",
+      VIAGEM: row.VIAGEM || row.viagem || "",
+      FROTA: row.FROTA || row.frota || "",
+      PREBOX: row.PREBOX || row.prebox || "",
+      "BOX-D": row["BOX-D"] || row.boxD || row.box_d || "",
+      status: row.status || row.STATUS || "LIVRE"
+    }));
+    // Mescla sem duplicar viagens já existentes
+    const viagensExistentes = new Set(data.map(item => item.VIAGEM));
+    const cargasParaAdicionar = newCargas.filter(c => !viagensExistentes.has(c.VIAGEM));
+    if (cargasParaAdicionar.length === 0) {
+      toast.info("Nenhuma nova carga encontrada na API.");
+      return;
+    }
+    setData([...data, ...cargasParaAdicionar]);
+    toast.success(`${cargasParaAdicionar.length} cargas importadas da API!`);
+  };
+
   return (
     <div className="h-full bg-background">
       <div className="container mx-auto max-w-[1400px] py-6 px-4">
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <WelcomeMessage userName="Operador" />
+            <WelcomeMessage userName={user?.name || "Operador"} />
           </div>
 
           <FileUploader onUpload={handleFileUpload} />
