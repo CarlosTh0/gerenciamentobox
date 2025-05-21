@@ -310,7 +310,7 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
         });
 
         if (duplicateViagens.length > 0) {
-          toast.warn(`As seguintes viagens estão duplicadas: ${duplicateViagens.join(', ')}`);
+          toast.info(`As seguintes viagens estão duplicadas: ${duplicateViagens.join(', ')}`);
         }
 
         onUpload(processedData);
@@ -334,24 +334,8 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
   return (
     <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
-        <div className="flex items-center w-full sm:w-auto">
-          <div className="relative group">
-            <label className="relative cursor-pointer flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors bg-gray-50 hover:bg-gray-100 rounded-md px-4 py-2 border border-gray-200">
-              <FileUp size={18} />
-              <span className="font-medium">Escolher arquivo</span>
-              <input 
-                type="file" 
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
-                onChange={handleFileChange}
-                accept=".xlsx,.xls,.csv"
-                disabled={isLoading || isAutomaticLoading}
-              />
-            </label>
-          </div>
-          <span className="ml-3 text-gray-600 text-sm truncate max-w-xs">{fileName}</span>
-        </div>
-
-        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+        {/* Removido Escolher arquivo e Carregar Excel, deixando só Buscar Arquivos Automaticamente */}
+        <div className="flex flex-wrap gap-3 w-full sm:w-auto justify-center">
           <Button
             onClick={handleAutomaticFileSearch}
             className="w-full sm:w-auto flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white shadow-sm"
@@ -359,15 +343,6 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
           >
             <FolderOpen size={16} />
             {isAutomaticLoading ? "Processando..." : "Buscar Arquivos Automaticamente"}
-          </Button>
-
-          <Button
-            onClick={() => toast.info("Utilize o botão 'Escolher arquivo' para carregar uma planilha")}
-            className="w-full sm:w-auto flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
-            disabled={isLoading || isAutomaticLoading}
-          >
-            <Upload size={16} />
-            {isLoading ? "Processando..." : "Carregar Excel"}
           </Button>
         </div>
       </div>

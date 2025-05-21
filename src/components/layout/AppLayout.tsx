@@ -17,7 +17,7 @@ import {
   SidebarTrigger
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Sun, Moon, LayoutDashboard, Truck, RefreshCw, PanelLeftClose, PanelLeft, History } from "lucide-react";
+import { Sun, Moon, Truck, RefreshCw, PanelLeftClose, PanelLeft, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -105,17 +105,6 @@ export default function AppLayout() {
                     <Link to="/" className="flex items-center gap-3">
                       <Truck className="h-4 w-4" />
                       <span>Gerenciamento</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={location.pathname === '/dashboard'}
-                  >
-                    <Link to="/dashboard" className="flex items-center gap-3">
-                      <LayoutDashboard className="h-4 w-4" />
-                      <span>Dashboard</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Package2, CircleCheck, Loader2, CircleDashed } from "lucide-react";
+import { Package2, CircleDashed } from "lucide-react";
 
 interface StatsCardsProps {
   stats: {
@@ -8,11 +8,12 @@ interface StatsCardsProps {
     incompleto: number;
     completo: number;
   };
+  boxDDisponiveis: string[];
 }
 
-const StatsCards = ({ stats }: StatsCardsProps) => {
+const StatsCards = ({ stats, boxDDisponiveis }: StatsCardsProps) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
       <StatCard 
         title="Total de Viagem" 
         value={stats.total} 
@@ -20,6 +21,7 @@ const StatsCards = ({ stats }: StatsCardsProps) => {
         gradient="from-blue-50 to-blue-100 dark:from-blue-950/40 dark:to-blue-900/30"
         iconColor="text-blue-600 dark:text-blue-400"
         textColor="text-blue-700 dark:text-blue-300"
+        small
       />
       <StatCard 
         title="Disponíveis" 
@@ -28,22 +30,7 @@ const StatsCards = ({ stats }: StatsCardsProps) => {
         gradient="from-emerald-50 to-emerald-100 dark:from-emerald-950/40 dark:to-emerald-900/30"
         iconColor="text-emerald-600 dark:text-emerald-400"
         textColor="text-emerald-700 dark:text-emerald-300"
-      />
-      <StatCard 
-        title="Em Carregamento" 
-        value={stats.incompleto} 
-        icon={<Loader2 className="h-5 w-5" />}
-        gradient="from-purple-50 to-purple-100 dark:from-purple-950/40 dark:to-purple-900/30"
-        iconColor="text-purple-600 dark:text-purple-400"
-        textColor="text-purple-700 dark:text-purple-300"
-      />
-      <StatCard 
-        title="Completadas" 
-        value={stats.completo} 
-        icon={<CircleCheck className="h-5 w-5" />}
-        gradient="from-violet-200 to-violet-300 dark:from-violet-900/60 dark:to-violet-900/40"
-        iconColor="text-violet-700 dark:text-violet-300"
-        textColor="text-violet-800 dark:text-violet-200"
+        boxDDisponiveis={boxDDisponiveis}
       />
     </div>
   );
@@ -56,21 +43,60 @@ interface StatCardProps {
   gradient: string;
   iconColor: string;
   textColor: string;
+  boxDDisponiveis?: string[];
+  small?: boolean;
 }
 
-const StatCard = ({ title, value, icon, gradient, iconColor, textColor }: StatCardProps) => {
+const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisponiveis, small }: StatCardProps) => {
+  if (boxDDisponiveis) {
+    // Mostra todos os BOX-D disponíveis em linha, em ordem crescente
+    return (
+      <Card className={`bg-gradient-to-br ${gradient} border-none shadow-lg hover:shadow-xl transition-all duration-300`}>
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">BOX-D disponíveis</span>
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {Array.from({ length: 32 }, (_, i) => (i + 1).toString()).map((num) => (
+              <div
+                key={num}
+                className={`text-xs font-mono flex items-center justify-center rounded h-7 w-7 border transition-colors duration-200
+                  ${boxDDisponiveis.includes(num)
+                    ? 'bg-emerald-500 text-white border-emerald-600'
+                    : 'bg-gray-100 text-gray-300 border-gray-200 dark:bg-gray-800 dark:text-gray-700 dark:border-gray-700'}
+                `}
+              >
+                {num}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className={`bg-gradient-to-br ${gradient} border-none shadow-lg hover:shadow-xl transition-all duration-300`}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <p className={`${textColor} text-sm font-medium`}>{title}</p>
+            {/* Remove o título para o card Disponíveis se for mostrar os BOX-D */}
+            {boxDDisponiveis ? null : (
+              <p className={`${textColor} text-sm font-medium`}>{title}</p>
+            )}
             <p className={`${textColor} text-3xl font-bold`}>{value}</p>
           </div>
           <div className={`${iconColor} p-3 rounded-xl bg-white/50 dark:bg-black/20`}>
             {icon}
           </div>
         </div>
+        {boxDDisponiveis && (
+          <div className="mt-2 flex flex-wrap gap-1 items-center">
+            <span className="text-xs font-mono text-emerald-900 dark:text-emerald-100">
+              {boxDDisponiveis.length > 0 ? boxDDisponiveis.join(", ") : "Nenhum disponível"}
+            </span>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -24,6 +24,7 @@ const Index = () => {
   const [stats, setStats] = useState({
     total: 0,
     livre: 0,
+    incompleto: 0, // Adicionado para compatibilidade
     completo: 0,
     parcial: 0,
     jaFoi: 0
@@ -106,17 +107,32 @@ const Index = () => {
     applyFilters();
   }, [data]);
 
+  useEffect(() => {
+    applyFilters();
+  }, [searchTerm, data]);
+
+  // Lista fixa de BOX-D disponíveis (1 a 32)
+  const boxDList = Array.from({ length: 32 }, (_, i) => (i + 1).toString());
+  // BOX-D ocupados: só considera cargas cujo status NÃO é 'JA_FOI', status não vazio e BOX-D preenchido
+  const boxDOcupados = data
+    .filter(item => {
+      const status = String(item["status"] || "").toUpperCase();
+      const boxd = String(item["BOX-D"] || "").trim();
+      return status !== "JA_FOI" && status !== "" && boxd !== "";
+    })
+    .map(item => String(item["BOX-D"]).trim());
+  // BOX-D disponíveis
+  const boxDDisponiveis = boxDList.filter(b => !boxDOcupados.includes(b));
+
   const applyFilters = () => {
     let result = [...data];
 
     if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
       result = result.filter(item => {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-          (String(item.VIAGEM || "")).toLowerCase().includes(searchLower) ||
-          (String(item.FROTA || "")).toLowerCase().includes(searchLower) ||
-          (String(item.PREBOX || "")).toLowerCase().includes(searchLower) ||
-          (String(item["BOX-D"] || "")).toLowerCase().includes(searchLower)
+        // Busca em todos os campos do objeto
+        return Object.values(item).some(value =>
+          String(value || "").toLowerCase().includes(searchLower)
         );
       });
     }
@@ -186,6 +202,7 @@ const Index = () => {
     setStats({
       total: data.length,
       livre: data.filter(item => item.status === "LIVRE").length,
+      incompleto: 0, // Adicionado para compatibilidade
       completo: data.filter(item => item.status === "COMPLETO").length,
       parcial: data.filter(item => item.status === "PARCIAL").length,
       jaFoi: data.filter(item => item.status === "JA_FOI").length
@@ -258,6 +275,7 @@ const Index = () => {
     setData([...data, newCarga]);
     saveAlteracao('criação', newCarga);
     toast.success("Nova carga adicionada!");
+    applyFilters(); // Garante atualização do filtro
   };
 
   const handleUpdateCarga = (index: number, updatedCarga: CargaItem) => {
@@ -387,12 +405,7 @@ const Index = () => {
 
           <FileUploader onUpload={handleFileUpload} />
 
-          <StatsCards stats={{
-            total: stats.total,
-            livre: stats.livre,
-            incompleto: stats.parcial,
-            completo: stats.completo + stats.jaFoi
-          }} />
+          <StatsCards stats={stats} boxDDisponiveis={boxDDisponiveis} />
 
           <ConflictAlert conflicts={conflicts} />
 
@@ -438,7 +451,8 @@ const Index = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-
+                {/* Removido os selects de filtro de status e ordenação */}
+                {/*
                 <Select
                   value={statusFilter}
                   onValueChange={setStatusFilter}
@@ -479,6 +493,7 @@ const Index = () => {
                 >
                   {sortDirection === "asc" ? "↑" : "↓"}
                 </Button>
+                */}
               </div>
             </div>
 
