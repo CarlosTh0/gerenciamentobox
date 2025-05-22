@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react";
+// Copyright (c) 2025 Seu Nome ou Empresa
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getUsers } from "@/lib/auth";
 import { User, UserRole } from "@/types/User";
+import { v4 as uuidv4 } from "uuid";
 
 const roles: { label: string; value: UserRole }[] = [
 	{ label: "Administrador", value: "admin" },
@@ -17,16 +21,12 @@ export default function UserRegister() {
 	const [role, setRole] = useState<UserRole>("visualizador");
 	const [success, setSuccess] = useState("");
 	const [error, setError] = useState("");
-	const [users, setUsers] = useState<User[]>([]);
+	const [users, setUsers] = useState<User[]>(() => getUsers());
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [editName, setEditName] = useState("");
 	const [editEmail, setEditEmail] = useState("");
 	const [editPassword, setEditPassword] = useState("");
 	const [editRole, setEditRole] = useState<UserRole>("visualizador");
-
-	useEffect(() => {
-		setUsers(getUsers());
-	}, [success]);
 
 	const handleRegister = (e: React.FormEvent) => {
 		e.preventDefault();
@@ -34,20 +34,21 @@ export default function UserRegister() {
 			setError("Preencha todos os campos.");
 			return;
 		}
-		const users = getUsers();
-		if (users.some((u) => u.email === email)) {
+		const usersAtual = getUsers();
+		if (usersAtual.some((u) => u.email === email)) {
 			setError("E-mail já cadastrado.");
 			return;
 		}
 		const newUser: User = {
-			id: crypto.randomUUID(),
+			id: uuidv4(),
 			name,
 			email,
 			password,
 			role,
 		};
-		users.push(newUser);
-		localStorage.setItem("users", JSON.stringify(users));
+		const updatedUsers = [...usersAtual, newUser];
+		localStorage.setItem("users", JSON.stringify(updatedUsers));
+		setUsers(updatedUsers); // Atualiza imediatamente
 		setSuccess("Usuário cadastrado com sucesso!");
 		setError("");
 		setName("");
@@ -97,28 +98,29 @@ export default function UserRegister() {
 	};
 
 	return (
-		<div className="max-w-2xl mx-auto px-2">
-			<form onSubmit={handleRegister} className="flex flex-col gap-2 p-4 border rounded-lg bg-card mb-4">
-				<h2 className="font-bold text-lg mb-2">Cadastrar Novo Usuário</h2>
-				<Input placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} />
-				<Input placeholder="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-				<Input placeholder="Senha" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-				<label className="font-medium">Perfil</label>
-				<select value={role} onChange={(e) => setRole(e.target.value as UserRole)} className="border rounded px-2 py-1">
-					{roles.map((r) => (
-						<option key={r.value} value={r.value}>
-							{r.label}
-						</option>
-					))}
-				</select>
-				{error && <span className="text-red-500 text-xs">{error}</span>}
-				{success && <span className="text-green-600 text-xs">{success}</span>}
-				<Button type="submit">Cadastrar</Button>
-			</form>
-			<div className="mt-6">
-				<h3 className="font-semibold mb-2">Usuários cadastrados</h3>
-				<div className="w-full overflow-x-auto">
-					<table className="w-full text-sm border rounded bg-background">
+		<div className="w-full max-w-md mx-auto flex flex-col gap-4">
+			<div className="bg-card border rounded-xl shadow-lg p-3 sm:p-4 flex flex-col gap-2 sm:gap-3">
+				<form onSubmit={handleRegister} className="flex flex-col gap-2 sm:gap-3">
+					<Input placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} />
+					<Input placeholder="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+					<Input placeholder="Senha" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+					<label className="font-medium">Perfil</label>
+					<select value={role} onChange={(e) => setRole(e.target.value as UserRole)} className="border rounded px-2 py-1">
+						{roles.map((r) => (
+							<option key={r.value} value={r.value}>
+								{r.label}
+							</option>
+						))}
+					</select>
+					{error && <span className="text-red-500 text-xs text-center">{error}</span>}
+					{success && <span className="text-green-600 text-xs text-center">{success}</span>}
+					<Button type="submit" className="w-full">Cadastrar</Button>
+				</form>
+			</div>
+			<div className="bg-card border rounded-xl shadow p-3">
+				<h3 className="font-semibold mb-2 text-center text-lg">Usuários cadastrados</h3>
+				<div className="overflow-x-auto max-w-full">
+					<table className="w-full min-w-[400px] text-sm border rounded bg-background">
 						<thead>
 							<tr className="bg-muted">
 								<th className="p-2 text-left">Nome</th>
