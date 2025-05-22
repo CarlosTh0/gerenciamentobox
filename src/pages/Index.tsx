@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import * as XLSX from 'xlsx';
 import { getCurrentUser } from "@/lib/auth";
+import FrotasFila from "@/components/FrotasFila";
 
 const LOCAL_STORAGE_KEY = 'cargo-management-data';
 const DEFAULT_SYNC_INTERVAL = 600000; // 10 minutos
@@ -44,6 +45,9 @@ const Index = () => {
   const [timeRemaining, setTimeRemaining] = useState<number>(syncInterval);
 
   const user = getCurrentUser();
+
+  // Ref para rolar até a frota na tabela
+  const tableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -395,6 +399,26 @@ const Index = () => {
     toast.success(`${cargasParaAdicionar.length} cargas importadas da API!`);
   };
 
+  // Função para rolar até a frota na tabela
+  const scrollToFrota = (frota: string) => {
+    if (!tableRef.current) return;
+    // Remove destaque anterior
+    tableRef.current.querySelectorAll("tr[data-frota]").forEach(tr => {
+      tr.classList.remove("ring-2", "ring-primary", "bg-yellow-100");
+    });
+    // Seleciona e destaca
+    const row = tableRef.current.querySelector(
+      `tr[data-frota='${frota}']`
+    ) as HTMLTableRowElement | null;
+    if (row) {
+      row.scrollIntoView({ behavior: "smooth", block: "center" });
+      row.classList.add("ring-2", "ring-primary", "bg-yellow-100");
+      setTimeout(() => {
+        row.classList.remove("ring-2", "ring-primary", "bg-yellow-100");
+      }, 2000);
+    }
+  };
+
   return (
     <div className="h-full bg-background">
       <div className="container mx-auto max-w-[1400px] py-6 px-4">
@@ -409,107 +433,72 @@ const Index = () => {
 
           <ConflictAlert conflicts={conflicts} />
 
-          <div className="space-y-4 bg-card rounded-xl p-6 shadow-lg">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Lista de Cargas</h2>
-                <span className="text-sm text-muted-foreground">
-                  {filteredData.length} de {data.length} registros
-                </span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <Button 
-                  onClick={handleExportToExcel}
-                  variant="outline"
-                  className="flex items-center gap-2 whitespace-nowrap"
-                  size="sm"
-                >
-                  <DownloadCloud size={16} />
-                  Exportar Excel
-                </Button>
-
-                <Button 
-                  onClick={handleAddCarga}
-                  className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 whitespace-nowrap"
-                  size="sm"
-                >
-                  <PlusCircle size={16} />
-                  Adicionar Carga
-                </Button>
-              </div>
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Lista lateral de frotas na fila */}
+            <div className="md:w-72 w-full mb-4 md:mb-0">
+              <FrotasFila cargas={data} onSelectFrota={scrollToFrota} />
             </div>
-
-            <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
-              <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                <div className="relative w-full sm:w-72">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar viagem, frota, box..."
-                    className="pl-8"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+            <div className="flex-1">
+              <div className="space-y-4 bg-card rounded-xl p-6 shadow-lg">
+                {/* ...filtros e ações... */}
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold">Lista de Cargas</h2>
+                    <span className="text-sm text-muted-foreground">
+                      {filteredData.length} de {data.length} registros
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button 
+                      onClick={handleExportToExcel}
+                      variant="outline"
+                      className="flex items-center gap-2 whitespace-nowrap"
+                      size="sm"
+                    >
+                      <DownloadCloud size={16} />
+                      Exportar Excel
+                    </Button>
+                    <Button 
+                      onClick={handleAddCarga}
+                      className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 whitespace-nowrap"
+                      size="sm"
+                    >
+                      <PlusCircle size={16} />
+                      Adicionar Carga
+                    </Button>
+                  </div>
+                </div>
+                {/* ...filtros de busca... */}
+                <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+                  <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <div className="relative w-full sm:w-72">
+                      <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar viagem, frota, box..."
+                        className="pl-8"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+                {/* Tabela de cargas com ref para rolagem */}
+                <div ref={tableRef} className="overflow-x-auto rounded-lg border bg-background">
+                  <CargasTable 
+                    data={filteredData} 
+                    onUpdateCarga={handleUpdateCarga} 
+                    onCheckConflicts={checkConflicts}
+                    onDeleteCarga={handleDeleteCarga}
+                    onSort={handleSort}
+                    sortField={sortField}
+                    sortDirection={sortDirection}
                   />
                 </div>
-                {/* Removido os selects de filtro de status e ordenação */}
-                {/*
-                <Select
-                  value={statusFilter}
-                  onValueChange={setStatusFilter}
-                >
-                  <SelectTrigger className="w-full sm:w-36">
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="TODOS">Todos</SelectItem>
-                    <SelectItem value="LIVRE">Livre</SelectItem>
-                    <SelectItem value="PARCIAL">Parcial</SelectItem>
-                    <SelectItem value="COMPLETO">Completo</SelectItem>
-                    <SelectItem value="JA_FOI">Já Foi</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={sortField}
-                  onValueChange={setSortField}
-                >
-                  <SelectTrigger className="w-full sm:w-36">
-                    <SelectValue placeholder="Ordenar por" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="HORA">Hora</SelectItem>
-                    <SelectItem value="VIAGEM">Viagem</SelectItem>
-                    <SelectItem value="FROTA">Frota</SelectItem>
-                    <SelectItem value="PREBOX">Prebox</SelectItem>
-                    <SelectItem value="BOX-D">Box-D</SelectItem>
-                    <SelectItem value="status">Status</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={() => setSortDirection(sortDirection === "asc" ? "desc" : "asc")}
-                >
-                  {sortDirection === "asc" ? "↑" : "↓"}
-                </Button>
-                */}
               </div>
-            </div>
-
-            <div className="overflow-x-auto rounded-lg border bg-background">
-              <CargasTable 
-                data={filteredData} 
-                onUpdateCarga={handleUpdateCarga} 
-                onCheckConflicts={checkConflicts}
-                onDeleteCarga={handleDeleteCarga}
-                onSort={handleSort}
-                sortField={sortField}
-                sortDirection={sortDirection}
-              />
             </div>
           </div>
 
+          {/* ...alertas e informações do sistema... */}
           <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-lg p-4 flex items-start gap-3 mt-6">
             <div className="text-amber-500 mt-0.5">
               <AlertTriangle size={18} />

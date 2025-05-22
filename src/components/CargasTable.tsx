@@ -100,6 +100,7 @@ const CargasTable = ({
                     onUpdateCarga={onUpdateCarga}
                     onCheckConflicts={onCheckConflicts}
                     onDeleteCarga={onDeleteCarga}
+                    dataFrota={row.FROTA || undefined}
                   />
                 ))
               ) : (
@@ -122,13 +123,15 @@ const TableRow = ({
   index,
   onUpdateCarga,
   onCheckConflicts,
-  onDeleteCarga
+  onDeleteCarga,
+  dataFrota
 }: { 
   row: CargaItem; 
   index: number;
   onUpdateCarga: (index: number, updatedCarga: CargaItem) => void;
   onCheckConflicts: () => void;
   onDeleteCarga?: (index: number) => void;
+  dataFrota?: string;
 }) => {
   const [status, setStatus] = useState<"LIVRE" | "COMPLETO" | "PARCIAL" | "JA_FOI">(row.status || "LIVRE");
   const [boxD, setBoxD] = useState(row["BOX-D"] || "");
@@ -316,7 +319,7 @@ const TableRow = ({
   };
 
   return (
-    <tr className="hover:bg-muted/30 transition-colors">
+    <tr data-frota={dataFrota}>
       <td className="px-6 py-4">
         <input 
           type="text" 
