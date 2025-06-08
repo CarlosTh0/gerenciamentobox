@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Warehouse, Plus, Filter } from 'lucide-react';
+import { Warehouse, Plus, Filter, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -321,6 +321,7 @@ const Rampas = () => {
                       >
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
+                            <Package className="h-4 w-4 text-purple-600" />
                             <span className="font-medium text-purple-800">
                               {frota.numero}
                             </span>

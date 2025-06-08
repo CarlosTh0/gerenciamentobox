@@ -99,7 +99,7 @@ const RampaCard = ({
       <div
         className={`relative p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
           isBloqueada
-            ? 'bg-red-50 border-red-300 animate-pulse'
+            ? 'bg-red-50 border-red-300'
             : isOcupada 
               ? isCarregada 
                 ? 'bg-purple-50 border-purple-300 shadow-purple-200 shadow-lg' 
@@ -113,7 +113,7 @@ const RampaCard = ({
           </p>
           {isBloqueada ? (
             <div className="mt-1 space-y-2">
-              <Lock className="h-4 w-4 text-red-600 mx-auto animate-bounce" strokeWidth={1.5} />
+              <Lock className="h-4 w-4 text-red-600 mx-auto" strokeWidth={1.5} />
               <p className="text-xs font-bold text-red-700">BLOQUEADA</p>
               <Button
                 size="sm"
@@ -171,6 +171,7 @@ const RampaCard = ({
                   variant="outline"
                   className="h-6 text-xs border-red-300 transition-all duration-200 hover:scale-110"
                   onClick={() => handleAction('block')}
+                  disabled={isCarregada}
                 >
                   <Lock className="h-3 w-3" />
                 </Button>
