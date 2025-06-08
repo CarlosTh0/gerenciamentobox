@@ -114,7 +114,11 @@ export default function AppLayout() {
                     isActive={location.pathname === '/rampas'}
                   >
                     <Link to="/rampas" className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4" />
+                      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2 18 L8 12 L22 12 L22 18 Z" stroke="currentColor" strokeWidth="1" fill="currentColor"/>
+                        <path d="M8 12 L16 18" stroke="white" strokeWidth="1.5"/>
+                        <rect x="16" y="15" width="3" height="3" fill="white"/>
+                      </svg>
                       <span>Rampas</span>
                     </Link>
                   </SidebarMenuButton>

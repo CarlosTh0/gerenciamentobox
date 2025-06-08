@@ -180,7 +180,11 @@ const Rampas = () => {
         {/* Header */}
         <div className="text-center mb-6 md:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-2 flex items-center justify-center gap-2 md:gap-3">
-            <Warehouse className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-blue-600" />
+            <svg className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M2 18 L8 12 L22 12 L22 18 Z" stroke="currentColor" strokeWidth="1" fill="currentColor"/>
+              <path d="M8 12 L16 18" stroke="white" strokeWidth="1.5"/>
+              <rect x="16" y="15" width="3" height="3" fill="white"/>
+            </svg>
             Controle de Rampas
           </h1>
           <p className="text-sm sm:text-base text-slate-600">Sistema de gestão de frotas e rampas de carregamento</p>
