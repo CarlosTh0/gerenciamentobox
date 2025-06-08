@@ -421,9 +421,9 @@ const Index = () => {
 
   return (
     <div className="h-full bg-background">
-      <div className="container mx-auto max-w-[1400px] py-6 px-4">
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="container mx-auto max-w-[1400px] py-3 sm:py-6 px-2 sm:px-4">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4">
             <WelcomeMessage userName={user?.name || "Operador"} />
           </div>
 
@@ -433,49 +433,51 @@ const Index = () => {
 
           <ConflictAlert conflicts={conflicts} />
 
-          <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
             {/* Lista lateral de frotas na fila */}
-            <div className="md:w-72 w-full mb-4 md:mb-0">
+            <div className="lg:w-72 w-full mb-3 lg:mb-0">
               <FrotasFila cargas={data} onSelectFrota={scrollToFrota} />
             </div>
             <div className="flex-1">
-              <div className="space-y-4 bg-card rounded-xl p-6 shadow-lg">
+              <div className="space-y-3 sm:space-y-4 bg-card rounded-xl p-3 sm:p-6 shadow-lg">
                 {/* ...filtros e ações... */}
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 sm:mb-4 gap-2 sm:gap-4">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-semibold">Lista de Cargas</h2>
-                    <span className="text-sm text-muted-foreground">
-                      {filteredData.length} de {data.length} registros
+                    <h2 className="text-base sm:text-lg font-semibold">Lista de Cargas</h2>
+                    <span className="text-xs sm:text-sm text-muted-foreground">
+                      {filteredData.length} de {data.length}
                     </span>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                     <Button 
                       onClick={handleExportToExcel}
                       variant="outline"
-                      className="flex items-center gap-2 whitespace-nowrap"
+                      className="flex items-center gap-1 sm:gap-2 flex-1 sm:flex-none text-xs sm:text-sm"
                       size="sm"
                     >
-                      <DownloadCloud size={16} />
-                      Exportar Excel
+                      <DownloadCloud className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden xs:inline">Exportar Excel</span>
+                      <span className="xs:hidden">Excel</span>
                     </Button>
                     <Button 
                       onClick={handleAddCarga}
-                      className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 whitespace-nowrap"
+                      className="flex items-center gap-1 sm:gap-2 bg-blue-500 hover:bg-blue-600 flex-1 sm:flex-none text-xs sm:text-sm"
                       size="sm"
                     >
-                      <PlusCircle size={16} />
-                      Adicionar Carga
+                      <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden xs:inline">Adicionar Carga</span>
+                      <span className="xs:hidden">Adicionar</span>
                     </Button>
                   </div>
                 </div>
                 {/* ...filtros de busca... */}
-                <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+                <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
                   <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
                     <div className="relative w-full sm:w-72">
                       <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Buscar viagem, frota, box..."
-                        className="pl-8"
+                        className="pl-8 text-sm"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                       />
