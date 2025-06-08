@@ -180,10 +180,10 @@ const Rampas = () => {
         {/* Header */}
         <div className="text-center mb-6 md:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 mb-2 flex items-center justify-center gap-2 md:gap-3">
-            <svg className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-blue-600" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M2 18 L8 12 L22 12 L22 18 Z" stroke="currentColor" strokeWidth="1" fill="currentColor"/>
-              <path d="M8 12 L16 18" stroke="white" strokeWidth="1.5"/>
-              <rect x="16" y="15" width="3" height="3" fill="white"/>
+            <svg className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z"/>
+              <polyline points="7,1 7,7 17,7 17,1"/>
+              <rect x="9" y="11" width="6" height="6" rx="1"/>
             </svg>
             Controle de Rampas
           </h1>
@@ -235,10 +235,10 @@ const Rampas = () => {
                 <CardTitle className="text-lg sm:text-xl">Rampas de Carregamento</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4 md:space-y-6">
+                <div className="space-y-4 md:space-y-6 max-h-[600px] overflow-y-auto pr-2">
                   {Array.from({ length: totalVaos }, (_, vaoIndex) => (
                     <div key={vaoIndex + 1} className="space-y-3">
-                      <h3 className="text-base sm:text-lg font-semibold text-slate-700 border-b pb-2">
+                      <h3 className="text-base sm:text-lg font-semibold text-slate-700 border-b pb-2 sticky top-0 bg-white z-10">
                         Vão {vaoIndex + 1}
                       </h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
