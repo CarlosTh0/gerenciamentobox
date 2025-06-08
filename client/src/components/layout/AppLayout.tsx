@@ -87,7 +87,7 @@ export default function AppLayout() {
         <Sidebar>
           <SidebarHeader className="flex h-14 sm:h-16 items-center border-b px-3 sm:px-6 justify-between">
             <span className="text-sm sm:text-lg font-semibold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-              Sistema de Cargas
+              Sistema de Agendamento
             </span>
             {user && (
               <span className="text-xs text-muted-foreground hidden sm:inline">{user.name} ({user.role})</span>
