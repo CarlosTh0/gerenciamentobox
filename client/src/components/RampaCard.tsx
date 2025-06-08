@@ -97,7 +97,7 @@ const RampaCard = ({
   return (
     <>
       <div
-        className={`relative p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
+        className={`relative p-2 sm:p-3 rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${
           isBloqueada
             ? 'bg-red-50 border-red-300'
             : isOcupada 
@@ -108,27 +108,27 @@ const RampaCard = ({
         }`}
       >
         <div className="text-center">
-          <p className="text-xs font-medium text-slate-600">
+          <p className="text-xs sm:text-sm font-medium text-slate-600">
             Rampa {rampa}
           </p>
           {isBloqueada ? (
-            <div className="mt-1 space-y-2">
-              <Lock className="h-4 w-4 text-red-600 mx-auto" strokeWidth={1.5} />
+            <div className="mt-1 space-y-1 sm:space-y-2">
+              <Lock className="h-3 w-3 sm:h-4 sm:w-4 text-red-600 mx-auto" strokeWidth={1.5} />
               <p className="text-xs font-bold text-red-700">BLOQUEADA</p>
               <Button
                 size="sm"
                 variant="outline"
-                className="h-6 text-xs border-red-300"
+                className="h-5 sm:h-6 text-xs border-red-300 w-full px-1"
                 onClick={() => handleAction('unblock')}
               >
                 <Unlock className="h-3 w-3" />
               </Button>
             </div>
           ) : isOcupada ? (
-            <div className="mt-1 space-y-2">
+            <div className="mt-1 space-y-1 sm:space-y-2">
               <Package 
-                className={`h-4 w-4 mx-auto ${
-                  isCarregada ? 'text-purple-600 animate-pulse' : 'text-orange-600'
+                className={`h-3 w-3 sm:h-4 sm:w-4 mx-auto ${
+                  isCarregada ? 'text-purple-600' : 'text-orange-600'
                 }`} 
                 strokeWidth={1.5} 
               />
@@ -137,7 +137,7 @@ const RampaCard = ({
               }`}>
                 {frotaOcupando.numero}
               </p>
-              <div className="flex items-center justify-center space-x-1 mb-2">
+              <div className="flex items-center justify-center space-x-1 mb-1 sm:mb-2">
                 <Checkbox
                   checked={isCarregada}
                   onCheckedChange={() => onToggleCarregada(frotaOcupando.id)}
@@ -150,7 +150,7 @@ const RampaCard = ({
                   <Button
                     size="sm"
                     variant="default"
-                    className="h-6 text-xs bg-purple-600 hover:bg-purple-700 transition-all duration-200 hover:scale-110"
+                    className="h-5 sm:h-6 text-xs bg-purple-600 hover:bg-purple-700 transition-all duration-200 hover:scale-110 px-1 sm:px-2"
                     onClick={() => handleAction('finish', frotaOcupando.id)}
                   >
                     <CheckCircle className="h-3 w-3" />
@@ -160,7 +160,7 @@ const RampaCard = ({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-6 text-xs transition-all duration-200 hover:scale-110"
+                    className="h-5 sm:h-6 text-xs transition-all duration-200 hover:scale-110 px-1 sm:px-2"
                     onClick={() => handleAction('remove', frotaOcupando.id)}
                   >
                     <Minus className="h-3 w-3" />
@@ -169,7 +169,7 @@ const RampaCard = ({
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-6 text-xs border-red-300 transition-all duration-200 hover:scale-110"
+                  className="h-5 sm:h-6 text-xs border-red-300 transition-all duration-200 hover:scale-110 px-1 sm:px-2"
                   onClick={() => handleAction('block')}
                   disabled={isCarregada}
                 >
@@ -178,14 +178,14 @@ const RampaCard = ({
               </div>
             </div>
           ) : (
-            <div className="mt-1 space-y-2">
+            <div className="mt-1 space-y-1 sm:space-y-2">
               <p className="text-xs text-green-600 font-medium">
                 Livre
               </p>
               <Button
                 size="sm"
                 variant="outline"
-                className="h-6 text-xs border-red-300 transition-all duration-200 hover:scale-110"
+                className="h-5 sm:h-6 text-xs border-red-300 transition-all duration-200 hover:scale-110 w-full px-1"
                 onClick={() => handleAction('block')}
               >
                 <Lock className="h-3 w-3" />

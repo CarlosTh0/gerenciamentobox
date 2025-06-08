@@ -85,12 +85,12 @@ export default function AppLayout() {
     <SidebarProvider defaultOpen={sidebarVisible} open={sidebarVisible} onOpenChange={setSidebarVisible}>
       <div className={`min-h-screen flex w-full ${theme === 'dark' ? 'dark' : ''}`}>
         <Sidebar>
-          <SidebarHeader className="flex h-16 items-center border-b px-6 justify-between">
-            <span className="text-lg font-semibold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+          <SidebarHeader className="flex h-14 sm:h-16 items-center border-b px-3 sm:px-6 justify-between">
+            <span className="text-sm sm:text-lg font-semibold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
               Sistema de Cargas
             </span>
             {user && (
-              <span className="text-xs text-muted-foreground">{user.name} ({user.role})</span>
+              <span className="text-xs text-muted-foreground hidden sm:inline">{user.name} ({user.role})</span>
             )}
           </SidebarHeader>
           <SidebarContent>
