@@ -6,6 +6,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AppLayout from "./components/layout/AppLayout";
 import Alteracoes from "@/pages/Alteracoes";
+import Rampas from "@/pages/Rampas";
 import LoginPage from "@/pages/Login";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -24,6 +25,7 @@ const App = () => {
           ) : (
             <Route element={<AppLayout />}>
               <Route path="/" element={<Index />} />
+              <Route path="/rampas" element={<Rampas />} />
               <Route path="/alteracoes" element={<Alteracoes />} />
               <Route path="*" element={<NotFound />} />
             </Route>

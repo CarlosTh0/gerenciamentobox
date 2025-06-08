@@ -17,7 +17,7 @@ import {
   SidebarTrigger
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Sun, Moon, Truck, RefreshCw, PanelLeftClose, PanelLeft, History } from "lucide-react";
+import { Sun, Moon, Truck, RefreshCw, PanelLeftClose, PanelLeft, History, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -105,6 +105,17 @@ export default function AppLayout() {
                     <Link to="/" className="flex items-center gap-3">
                       <Truck className="h-4 w-4" />
                       <span>Gerenciamento</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={location.pathname === '/rampas'}
+                  >
+                    <Link to="/rampas" className="flex items-center gap-3">
+                      <MapPin className="h-4 w-4" />
+                      <span>Rampas</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
