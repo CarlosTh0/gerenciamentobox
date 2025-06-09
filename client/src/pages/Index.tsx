@@ -115,6 +115,9 @@ const Index = () => {
     applyFilters();
   }, [searchTerm, data]);
 
+  // Lista padrão de BOX-D (1 a 32)
+  const boxDPadrao = Array.from({ length: 32 }, (_, i) => (i + 1).toString());
+  
   // BOX-D ocupados: só considera cargas cujo status NÃO é 'JA_FOI', status não vazio e BOX-D preenchido
   const boxDOcupados = data
     .filter(item => {
@@ -124,10 +127,10 @@ const Index = () => {
     })
     .map(item => String(item["BOX-D"]).trim());
   
-  // Lista dinâmica de todos os BOX-D que já foram usados
-  const todosBoxDUsados = data
+  // BOX-D extras (além dos 32 padrão) que foram usados
+  const boxDExtras = data
     .map(item => String(item["BOX-D"] || "").trim())
-    .filter(boxd => boxd !== "")
+    .filter(boxd => boxd !== "" && !boxDPadrao.includes(boxd))
     .filter((value, index, self) => self.indexOf(value) === index) // Remove duplicados
     .sort((a, b) => {
       const numA = parseInt(a);
@@ -138,8 +141,11 @@ const Index = () => {
       return a.localeCompare(b);
     });
   
+  // Lista completa de BOX-D (padrão + extras)
+  const todosBoxD = [...boxDPadrao, ...boxDExtras];
+  
   // BOX-D disponíveis (não ocupados)
-  const boxDDisponiveis = todosBoxDUsados.filter(b => !boxDOcupados.includes(b));
+  const boxDDisponiveis = todosBoxD.filter(b => !boxDOcupados.includes(b));
 
   const applyFilters = () => {
     let result = [...data];

@@ -57,10 +57,23 @@ const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisp
             <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">BOX-D disponíveis</span>
           </div>
           <div className="flex flex-wrap gap-1">
-            {boxDDisponiveis.map((num) => (
+            {Array.from({ length: 32 }, (_, i) => (i + 1).toString()).map((num) => (
               <div
                 key={num}
-                className="text-xs font-mono flex items-center justify-center rounded h-7 w-7 border transition-colors duration-200 bg-emerald-500 text-white border-emerald-600"
+                className={`text-xs font-mono flex items-center justify-center rounded h-7 w-7 border transition-colors duration-200
+                  ${boxDDisponiveis.includes(num)
+                    ? 'bg-emerald-500 text-white border-emerald-600'
+                    : 'bg-gray-100 text-gray-300 border-gray-200 dark:bg-gray-800 dark:text-gray-700 dark:border-gray-700'}
+                `}
+              >
+                {num}
+              </div>
+            ))}
+            {/* BOX-D extras (além dos 32 padrão) */}
+            {boxDDisponiveis.filter(num => !Array.from({ length: 32 }, (_, i) => (i + 1).toString()).includes(num)).map((num) => (
+              <div
+                key={num}
+                className="text-xs font-mono flex items-center justify-center rounded h-7 min-w-7 px-1 border transition-colors duration-200 bg-blue-500 text-white border-blue-600"
               >
                 {num}
               </div>
@@ -86,13 +99,7 @@ const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisp
             {icon}
           </div>
         </div>
-        {boxDDisponiveis && (
-          <div className="mt-2 flex flex-wrap gap-1 items-center">
-            <span className="text-xs font-mono text-emerald-900 dark:text-emerald-100">
-              {boxDDisponiveis.length > 0 ? boxDDisponiveis.join(", ") : "Nenhum disponível"}
-            </span>
-          </div>
-        )}
+
       </CardContent>
     </Card>
   );
