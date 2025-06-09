@@ -15,6 +15,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import * as XLSX from 'xlsx';
 import { getCurrentUser } from "@/lib/auth";
 import FrotasFila from "@/components/FrotasFila";
+import ViagemSync from "@/components/ViagemSync";
 
 const LOCAL_STORAGE_KEY = 'cargo-management-data';
 const DEFAULT_SYNC_INTERVAL = 600000; // 10 minutos
@@ -443,6 +444,19 @@ const Index = () => {
           </div>
 
           <FileUploader onUpload={handleFileUpload} />
+
+          <ViagemSync cargas={data} onUpdateCargas={(updatedCargas) => {
+            setData(updatedCargas);
+            // Salva alterações para cada viagem atualizada
+            updatedCargas.forEach((carga, index) => {
+              if (data[index] && (
+                carga.PREBOX !== data[index].PREBOX || 
+                carga["BOX-D"] !== data[index]["BOX-D"]
+              )) {
+                saveAlteracao('atualização', carga);
+              }
+            });
+          }} />
 
           <StatsCards stats={stats} boxDDisponiveis={boxDDisponiveis} boxDOcupados={boxDOcupados} />
 
