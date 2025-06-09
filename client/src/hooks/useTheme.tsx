@@ -19,9 +19,22 @@ export function useTheme() {
     // Save theme preference to localStorage
     localStorage.setItem('theme', theme);
     
-    // Apply theme to document
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    // Apply theme to document root and body
+    const root = document.documentElement;
+    const body = document.body;
+    
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      body.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+      body.classList.remove('dark');
+    }
   }, [theme]);
 
-  return { theme, setTheme };
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
+
+  return { theme, setTheme, toggleTheme };
 }

@@ -27,7 +27,7 @@ import UserRegister from "@/components/UserRegister";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function AppLayout() {
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lastSync, setLastSync] = useState<Date | null>(null);
@@ -83,7 +83,7 @@ export default function AppLayout() {
 
   return (
     <SidebarProvider defaultOpen={sidebarVisible} open={sidebarVisible} onOpenChange={setSidebarVisible}>
-      <div className={`min-h-screen flex w-full ${theme === 'dark' ? 'dark' : ''}`}>
+      <div className="min-h-screen flex w-full">
         <Sidebar>
           <SidebarHeader className="flex h-14 sm:h-16 items-center border-b px-3 sm:px-6 justify-between">
             <span className="text-sm sm:text-lg font-semibold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
@@ -173,7 +173,7 @@ export default function AppLayout() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                onClick={toggleTheme}
                 className="w-full justify-start"
               >
                 {theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
