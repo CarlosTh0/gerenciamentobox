@@ -295,6 +295,44 @@ const Index = () => {
     applyFilters(); // Garante atualização do filtro
   };
 
+  // Função para adicionar dados de demonstração com BOX-D extras
+  const handleAddDemoData = () => {
+    const demoData: CargaItem[] = [
+      {
+        id: uuidv4(),
+        HORA: "08:00",
+        VIAGEM: "DEMO001",
+        FROTA: "F100",
+        PREBOX: "300",
+        "BOX-D": "G65",
+        status: "JA_FOI"
+      },
+      {
+        id: uuidv4(),
+        HORA: "09:00",
+        VIAGEM: "DEMO002", 
+        FROTA: "F101",
+        PREBOX: "301",
+        "BOX-D": "34",
+        status: "JA_FOI"
+      },
+      {
+        id: uuidv4(),
+        HORA: "10:00",
+        VIAGEM: "DEMO003",
+        FROTA: "F102", 
+        PREBOX: "302",
+        "BOX-D": "A15",
+        status: "JA_FOI"
+      }
+    ];
+
+    setData([...data, ...demoData]);
+    demoData.forEach(carga => saveAlteracao('criação', carga));
+    toast.success("Dados de demonstração adicionados! BOX-D extras agora visíveis em azul.");
+    applyFilters();
+  };
+
   const handleUpdateCarga = (index: number, updatedCarga: CargaItem) => {
     const dataIndex = data.findIndex(item => item.id === filteredData[index].id);
     if (dataIndex !== -1) {
@@ -480,6 +518,15 @@ const Index = () => {
                       <PlusCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span className="hidden xs:inline">Adicionar Carga</span>
                       <span className="xs:hidden">Adicionar</span>
+                    </Button>
+                    <Button 
+                      onClick={handleAddDemoData}
+                      variant="outline"
+                      className="flex items-center gap-1 sm:gap-2 border-blue-500 text-blue-600 hover:bg-blue-50 flex-1 sm:flex-none text-xs sm:text-sm"
+                      size="sm"
+                    >
+                      <span className="hidden sm:inline">Demo BOX-D Extras</span>
+                      <span className="sm:hidden">Demo</span>
                     </Button>
                   </div>
                 </div>
