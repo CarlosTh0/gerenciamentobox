@@ -21,14 +21,15 @@ interface ViagemExterna {
 
 export default function ViagemSync({ cargas, onUpdateCargas }: ViagemSyncProps) {
   const [apiUrl, setApiUrl] = useState(() => 
-    localStorage.getItem("viagem-api-url") || ""
+    localStorage.getItem("viagem-api-url") || "https://9c4eeb09-fb32-4ebf-9cda-12e0bf81c018-00-s5hsqe65wxdo.riker.replit.dev/api/export/trips"
   );
   const [apiKey, setApiKey] = useState(() => 
     localStorage.getItem("viagem-api-key") || ""
   );
   const [loading, setLoading] = useState(false);
   const [lastSync, setLastSync] = useState<Date | null>(null);
-  const [autoSync, setAutoSync] = useState(false);
+  const [syncMode, setSyncMode] = useState<'all' | 'compare'>('all');
+  const [testResults, setTestResults] = useState<string | null>(null);
 
   // Buscar dados da API externa
   const syncViagens = async () => {
@@ -39,33 +40,43 @@ export default function ViagemSync({ cargas, onUpdateCargas }: ViagemSyncProps) 
 
     setLoading(true);
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
-      
-      if (apiKey) {
-        headers['Authorization'] = `Bearer ${apiKey}`;
+      let viagensExternas: any[] = [];
+
+      if (syncMode === 'all') {
+        // Buscar todas as viagens
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+        viagensExternas = await response.json();
+      } else {
+        // Modo comparação - enviar lista de viagens para comparar
+        const viagensParaComparar = cargas.map(c => c.VIAGEM).filter(v => v && v.trim() !== '');
+        
+        const response = await fetch('https://9c4eeb09-fb32-4ebf-9cda-12e0bf81c018-00-s5hsqe65wxdo.riker.replit.dev/api/export/compare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ viagens: viagensParaComparar })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        }
+        viagensExternas = await response.json();
       }
 
-      const response = await fetch(apiUrl, { headers });
-      
-      if (!response.ok) {
-        throw new Error(`Erro ${response.status}: ${response.statusText}`);
-      }
-
-      const viagensExternas: ViagemExterna[] = await response.json();
-      
       // Atualizar cargas existentes com dados da API
       const cargasAtualizadas = cargas.map(carga => {
+        // Buscar dados da viagem na resposta da API
         const viagemExterna = viagensExternas.find(
-          ext => ext.VIAGEM === carga.VIAGEM
+          ext => ext.viagem === carga.VIAGEM || ext.VIAGEM === carga.VIAGEM
         );
         
         if (viagemExterna) {
           return {
             ...carga,
-            PREBOX: viagemExterna.PREBOX || carga.PREBOX,
-            "BOX-D": viagemExterna["BOX-D"] || carga["BOX-D"]
+            PREBOX: viagemExterna.prebox || viagemExterna.PREBOX || carga.PREBOX,
+            "BOX-D": viagemExterna.boxd || viagemExterna["BOX-D"] || carga["BOX-D"]
           };
         }
         
@@ -81,11 +92,11 @@ export default function ViagemSync({ cargas, onUpdateCargas }: ViagemSyncProps) 
       onUpdateCargas(cargasAtualizadas);
       setLastSync(new Date());
       
-      toast.success(`Sincronização concluída: ${atualizadas} viagens atualizadas`);
+      toast.success(`Sincronização concluída: ${atualizadas} viagens atualizadas de ${viagensExternas.length} encontradas`);
       
     } catch (error) {
       console.error("Erro na sincronização:", error);
-      toast.error(`Erro na sincronização: ${error}`);
+      toast.error(`Erro na sincronização: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     } finally {
       setLoading(false);
     }
@@ -118,22 +129,45 @@ export default function ViagemSync({ cargas, onUpdateCargas }: ViagemSyncProps) 
         {/* Configuração da API */}
         <div className="space-y-3">
           <div>
-            <label className="text-sm font-medium">URL da API Externa</label>
+            <label className="text-sm font-medium">Modo de Sincronização</label>
+            <div className="flex gap-2 mt-1">
+              <Button
+                variant={syncMode === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setSyncMode('all');
+                  setApiUrl('https://9c4eeb09-fb32-4ebf-9cda-12e0bf81c018-00-s5hsqe65wxdo.riker.replit.dev/api/export/trips');
+                }}
+              >
+                Todas as Viagens
+              </Button>
+              <Button
+                variant={syncMode === 'compare' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setSyncMode('compare');
+                  setApiUrl('https://9c4eeb09-fb32-4ebf-9cda-12e0bf81c018-00-s5hsqe65wxdo.riker.replit.dev/api/export/compare');
+                }}
+              >
+                Comparar Viagens
+              </Button>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">URL da API</label>
             <Input 
               value={apiUrl}
               onChange={(e) => setApiUrl(e.target.value)}
-              placeholder="https://api.sistema-externo.com/viagens"
+              placeholder="URL da API"
+              className="text-xs"
             />
-          </div>
-          
-          <div>
-            <label className="text-sm font-medium">Chave da API (opcional)</label>
-            <Input 
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="sua-chave-api-aqui"
-            />
+            <p className="text-xs text-muted-foreground mt-1">
+              {syncMode === 'all' 
+                ? 'Busca todas as viagens disponíveis'
+                : 'Compara apenas viagens existentes no sistema'
+              }
+            </p>
           </div>
           
           <Button onClick={saveConfig} variant="outline" size="sm">
@@ -202,13 +236,16 @@ export default function ViagemSync({ cargas, onUpdateCargas }: ViagemSyncProps) 
 
         {/* Instruções */}
         <div className="bg-blue-50 p-3 rounded-lg">
-          <h4 className="text-sm font-medium text-blue-900 mb-1">Como usar:</h4>
+          <h4 className="text-sm font-medium text-blue-900 mb-1">APIs Disponíveis:</h4>
           <ul className="text-xs text-blue-800 space-y-1">
-            <li>1. Configure a URL da API do sistema externo</li>
-            <li>2. Adicione a chave de API se necessário</li>
-            <li>3. Clique em "Sincronizar Agora" para buscar dados</li>
-            <li>4. O sistema vai atualizar PREBOX e BOX-D por VIAGEM</li>
+            <li><strong>Todas as Viagens:</strong> Busca todos os dados disponíveis</li>
+            <li><strong>Comparar Viagens:</strong> Envia suas viagens e recebe PREBOX vinculados</li>
+            <li><strong>Consulta específica:</strong> /api/export/prebox/ID para PRE-BOX específico</li>
+            <li><strong>Dados básicos:</strong> /api/trips e /api/preboxes disponíveis</li>
           </ul>
+          <p className="text-xs text-blue-700 mt-2">
+            Sistema atualiza automaticamente PREBOX e BOX-D por VIAGEM
+          </p>
         </div>
       </CardContent>
     </Card>
