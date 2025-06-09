@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { useTheme } from "@/hooks/useTheme";
 import { 
   SidebarProvider,
   Sidebar, 
@@ -17,7 +16,7 @@ import {
   SidebarTrigger
 } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Sun, Moon, Truck, RefreshCw, PanelLeftClose, PanelLeft, History, MapPin } from "lucide-react";
+import { Truck, RefreshCw, PanelLeftClose, PanelLeft, History, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -27,7 +26,6 @@ import UserRegister from "@/components/UserRegister";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function AppLayout() {
-  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lastSync, setLastSync] = useState<Date | null>(null);
@@ -170,15 +168,6 @@ export default function AppLayout() {
           </SidebarContent>
           <SidebarFooter className="p-4 border-t">
             <div className="flex flex-col gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={toggleTheme}
-                className="w-full justify-start"
-              >
-                {theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
-                {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
-              </Button>
               <div className="flex flex-col gap-1">
                 <div className="text-xs text-muted-foreground flex items-center justify-between">
                   <span>{isOnline ? 'Online' : 'Offline'}</span>
