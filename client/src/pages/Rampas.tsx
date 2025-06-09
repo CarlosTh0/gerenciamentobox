@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Warehouse, Plus, Filter, Package, Minus } from 'lucide-react';
+import { Warehouse, Plus, Filter, Package, Minus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -114,6 +114,12 @@ const Rampas = () => {
     const frota = frotas.find(f => f.id === frotaId);
     const novoStatus = !frota?.carregada;
     toast.success(`${frota?.numero} ${novoStatus ? 'carregada' : 'descarregada'}`);
+  };
+
+  const apagarFrota = (frotaId: string) => {
+    const frota = frotas.find(f => f.id === frotaId);
+    setFrotas(prev => prev.filter(f => f.id !== frotaId));
+    toast.success(`${frota?.numero} foi removida do sistema`);
   };
 
   const finalizarCarregamento = (frotaId: string) => {
@@ -401,32 +407,43 @@ const Rampas = () => {
                           {frota.numero}
                         </span>
                       </div>
-                      <select
-                        className="text-xs sm:text-sm border rounded px-2 py-1 transition-all duration-200 hover:border-green-400 focus:border-green-500"
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            const [rampa, galpao] = e.target.value.split('-').map(Number);
-                            alocarFrota(frota.id, rampa, galpao);
-                          }
-                        }}
-                        defaultValue=""
-                      >
-                        <option value="">Alocar</option>
-                        {Array.from({ length: totalRampas }, (_, i) => {
-                          const rampa = i + 1;
-                          const galpao = Math.ceil(rampa / rampasPorVao);
-                          const ocupada = rampaOcupada(rampa, galpao);
-                          const bloqueada = rampaEstaBloqueada(rampa, galpao);
-                          
-                          if (ocupada || bloqueada) return null;
-                          
-                          return (
-                            <option key={rampa} value={`${rampa}-${galpao}`}>
-                              Rampa {rampa} (V{galpao})
-                            </option>
-                          );
-                        })}
-                      </select>
+                      <div className="flex items-center gap-2">
+                        <select
+                          className="text-xs sm:text-sm border rounded px-2 py-1 transition-all duration-200 hover:border-green-400 focus:border-green-500"
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              const [rampa, galpao] = e.target.value.split('-').map(Number);
+                              alocarFrota(frota.id, rampa, galpao);
+                            }
+                          }}
+                          defaultValue=""
+                        >
+                          <option value="">Alocar</option>
+                          {Array.from({ length: totalRampas }, (_, i) => {
+                            const rampa = i + 1;
+                            const galpao = Math.ceil(rampa / rampasPorVao);
+                            const ocupada = rampaOcupada(rampa, galpao);
+                            const bloqueada = rampaEstaBloqueada(rampa, galpao);
+                            
+                            if (ocupada || bloqueada) return null;
+                            
+                            return (
+                              <option key={rampa} value={`${rampa}-${galpao}`}>
+                                Rampa {rampa} (V{galpao})
+                              </option>
+                            );
+                          })}
+                        </select>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => apagarFrota(frota.id)}
+                          className="h-7 w-7 p-0"
+                          title="Apagar frota"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
                   ))}
                   
