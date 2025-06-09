@@ -31,6 +31,7 @@ const RampaCard = ({
   galpao,
   frotaOcupando,
   isBloqueada,
+  cargasGerenciamento = [],
   onToggleBloqueio,
   onToggleCarregada,
   onRemoverFrota,
@@ -44,6 +45,14 @@ const RampaCard = ({
 
   const isOcupada = !!frotaOcupando;
   const isCarregada = frotaOcupando?.carregada;
+
+  // Função para buscar BOX-D de uma frota no Gerenciamento
+  const obterBoxDDaFrota = (numeroFrota: string): string[] => {
+    return cargasGerenciamento
+      .filter(carga => carga.FROTA === numeroFrota)
+      .map(carga => carga["BOX-D"])
+      .filter(box => box && box.trim() !== '');
+  };
 
   const handleAction = (type: 'block' | 'unblock' | 'remove' | 'finish', data?: any) => {
     setConfirmAction({ type, data });
@@ -133,6 +142,21 @@ const RampaCard = ({
               }`}>
                 {frotaOcupando.numero}
               </p>
+              {(() => {
+                const boxDs = obterBoxDDaFrota(frotaOcupando.numero);
+                return boxDs.length > 0 ? (
+                  <div className="flex flex-wrap gap-1 justify-center">
+                    {boxDs.map((box, index) => (
+                      <span 
+                        key={index}
+                        className="px-1 py-0.5 bg-blue-100 text-blue-700 text-xs rounded border border-blue-200 font-medium"
+                      >
+                        {box}
+                      </span>
+                    ))}
+                  </div>
+                ) : null;
+              })()}
               <div className="flex items-center justify-center space-x-1 mb-1 sm:mb-2">
                 <Checkbox
                   checked={isCarregada}

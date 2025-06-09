@@ -41,15 +41,37 @@ const Rampas = () => {
 
   // Carrega dados do Gerenciamento do localStorage
   useEffect(() => {
-    const storedData = localStorage.getItem('cargo-management-data');
-    if (storedData) {
-      try {
-        const parsedData = JSON.parse(storedData);
-        setCargasGerenciamento(parsedData);
-      } catch (error) {
-        console.error("Erro ao carregar dados do Gerenciamento:", error);
+    const carregarDados = () => {
+      const storedData = localStorage.getItem('cargo-management-data');
+      if (storedData) {
+        try {
+          const parsedData = JSON.parse(storedData);
+          setCargasGerenciamento(parsedData);
+        } catch (error) {
+          console.error("Erro ao carregar dados do Gerenciamento:", error);
+        }
       }
-    }
+    };
+
+    // Carrega dados iniciais
+    carregarDados();
+
+    // Escuta mudanças no localStorage
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'cargo-management-data') {
+        carregarDados();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Verifica periodicamente por mudanças (para mudanças na mesma aba)
+    const interval = setInterval(carregarDados, 2000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, []);
 
   // Função para buscar BOX-D de uma frota no Gerenciamento
@@ -284,6 +306,7 @@ const Rampas = () => {
                               galpao={galpaoNumero}
                               frotaOcupando={frotaOcupando}
                               isBloqueada={bloqueada}
+                              cargasGerenciamento={cargasGerenciamento}
                               onToggleBloqueio={toggleBloqueioRampa}
                               onToggleCarregada={toggleCarregada}
                               onRemoverFrota={removerFrota}
