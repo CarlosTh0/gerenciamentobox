@@ -9,9 +9,10 @@ interface StatsCardsProps {
     completo: number;
   };
   boxDDisponiveis: string[];
+  boxDOcupados?: string[];
 }
 
-const StatsCards = ({ stats, boxDDisponiveis }: StatsCardsProps) => {
+const StatsCards = ({ stats, boxDDisponiveis, boxDOcupados }: StatsCardsProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
       <StatCard 
@@ -31,6 +32,7 @@ const StatsCards = ({ stats, boxDDisponiveis }: StatsCardsProps) => {
         iconColor="text-emerald-600 dark:text-emerald-400"
         textColor="text-emerald-700 dark:text-emerald-300"
         boxDDisponiveis={boxDDisponiveis}
+        boxDOcupados={boxDOcupados}
       />
     </div>
   );
@@ -44,13 +46,17 @@ interface StatCardProps {
   iconColor: string;
   textColor: string;
   boxDDisponiveis?: string[];
+  boxDOcupados?: string[];
   small?: boolean;
 }
 
-const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisponiveis, small }: StatCardProps) => {
+const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisponiveis, boxDOcupados, small }: StatCardProps) => {
   if (boxDDisponiveis && Array.isArray(boxDDisponiveis)) {
     const boxDPadrao = Array.from({ length: 32 }, (_, i) => (i + 1).toString());
-    const boxDExtras = boxDDisponiveis.filter(num => !boxDPadrao.includes(num));
+    // Mostra BOX-D extras que estão ocupados (em azul)
+    const boxDExtrasOcupados = boxDOcupados 
+      ? boxDOcupados.filter(num => !boxDPadrao.includes(num))
+      : [];
     
 
     
@@ -74,8 +80,8 @@ const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisp
                 {num}
               </div>
             ))}
-            {/* BOX-D extras (além dos 32 padrão) em azul */}
-            {boxDExtras.map((num) => (
+            {/* BOX-D extras ocupados (além dos 32 padrão) em azul */}
+            {boxDExtrasOcupados.map((num) => (
               <div
                 key={num}
                 className="text-xs font-mono flex items-center justify-center rounded h-7 min-w-7 px-1 border transition-colors duration-200 bg-blue-500 text-white border-blue-600"
@@ -84,10 +90,10 @@ const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisp
               </div>
             ))}
           </div>
-          {boxDExtras.length > 0 && (
+          {boxDExtrasOcupados.length > 0 && (
             <div className="mt-2">
               <span className="text-xs text-blue-600 dark:text-blue-400">
-                {boxDExtras.length} BOX-D extra{boxDExtras.length > 1 ? 's' : ''} disponível{boxDExtras.length > 1 ? 'eis' : ''}
+                {boxDExtrasOcupados.length} BOX-D extra{boxDExtrasOcupados.length > 1 ? 's' : ''} ocupado{boxDExtrasOcupados.length > 1 ? 's' : ''}
               </span>
             </div>
           )}
