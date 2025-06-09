@@ -3,6 +3,7 @@ import { Package, Lock, Unlock, Minus, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import ConfirmDialog from './ConfirmDialog';
+import { CargaItem } from './CargasTable';
 
 interface Frota {
   id: string;
@@ -18,6 +19,7 @@ interface RampaCardProps {
   galpao: number;
   frotaOcupando?: Frota;
   isBloqueada: boolean;
+  cargasGerenciamento?: CargaItem[];
   onToggleBloqueio: (rampa: number, galpao: number) => void;
   onToggleCarregada: (frotaId: string) => void;
   onRemoverFrota: (frotaId: string) => void;

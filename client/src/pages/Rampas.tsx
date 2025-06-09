@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Warehouse, Plus, Filter, Package, Minus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import RampaCard from '@/components/RampaCard';
+import { CargaItem } from '@/components/CargasTable';
 
 interface Frota {
   id: string;
@@ -33,9 +34,31 @@ const Rampas = () => {
     { id: '4', numero: 'CEG-004', status: 'rampa', rampa: 5, galpao: 2, carregada: true },
   ]);
   
+  const [cargasGerenciamento, setCargasGerenciamento] = useState<CargaItem[]>([]);
   const [rampasBloqueadas, setRampasBloqueadas] = useState<RampaBloqueada[]>([]);
   const [novaFrota, setNovaFrota] = useState('');
   const [filtroDespachadas, setFiltroDespachadas] = useState('');
+
+  // Carrega dados do Gerenciamento do localStorage
+  useEffect(() => {
+    const storedData = localStorage.getItem('cargo-management-data');
+    if (storedData) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        setCargasGerenciamento(parsedData);
+      } catch (error) {
+        console.error("Erro ao carregar dados do Gerenciamento:", error);
+      }
+    }
+  }, []);
+
+  // Função para buscar BOX-D de uma frota no Gerenciamento
+  const obterBoxDDaFrota = (numeroFrota: string): string[] => {
+    return cargasGerenciamento
+      .filter(carga => carga.FROTA === numeroFrota)
+      .map(carga => carga["BOX-D"])
+      .filter(box => box && box.trim() !== '');
+  };
 
   const updateConfig = (vaos: number, rampas: number) => {
     // Remove frotas que estão em rampas que não existem mais
@@ -403,9 +426,26 @@ const Rampas = () => {
                         <svg className="h-4 w-4 text-green-600" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M20 8h-3l-1.5-4.5c-.3-.8-1.1-1.5-2-1.5H8c-.9 0-1.7.7-2 1.5L4.5 8H2c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h2v1c0 .6.4 1 1 1s1-.4 1-1v-1h12v1c0 .6.4 1 1 1s1-.4 1-1v-1h2c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2zM7.5 4.5c.1-.3.4-.5.7-.5h7.6c.3 0 .6.2.7.5L17.5 8h-11L7.5 4.5zM4 16c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm16 0c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z"/>
                         </svg>
-                        <span className="font-medium text-green-800 text-sm">
-                          {frota.numero}
-                        </span>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-green-800 text-sm">
+                            {frota.numero}
+                          </span>
+                          {(() => {
+                            const boxDs = obterBoxDDaFrota(frota.numero);
+                            return boxDs.length > 0 ? (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {boxDs.map((box, index) => (
+                                  <span 
+                                    key={index}
+                                    className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded border border-blue-200 font-medium"
+                                  >
+                                    {box}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : null;
+                          })()}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <select
