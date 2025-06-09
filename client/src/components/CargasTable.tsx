@@ -168,9 +168,10 @@ const TableRow = ({
   };
 
   const validateBoxD = (value: string) => {
-    const boxDNumber = parseInt(value);
     if (value === "") return true;
-    return !isNaN(boxDNumber) && boxDNumber >= 1 && boxDNumber <= 32;
+    // Aceita qualquer número válido, sem limite fixo
+    const boxDNumber = parseInt(value);
+    return !isNaN(boxDNumber) && boxDNumber > 0;
   };
 
   const validatePrebox = (value: string) => {
@@ -216,7 +217,7 @@ const TableRow = ({
   const handleBoxDChange = (value: string) => {
     if (!validateBoxD(value) && value !== "") {
       toast.error("Número de BOX-D inválido", {
-        description: "O BOX-D deve estar entre 1 e 32"
+        description: "O BOX-D deve ser um número válido maior que 0"
       });
       return;
     }
@@ -361,7 +362,7 @@ const TableRow = ({
         <input 
           type="text" 
           className={`w-full border ${boxD && !validateBoxD(boxD) ? 'border-destructive' : 'border-input'} px-3 py-1.5 rounded text-sm focus:ring-2 focus:ring-ring focus:border-ring outline-none transition-shadow bg-background`}
-          placeholder="1-32" 
+          placeholder="BOX-D" 
           value={boxD}
           onChange={(e) => handleBoxDChange(e.target.value)}
         />

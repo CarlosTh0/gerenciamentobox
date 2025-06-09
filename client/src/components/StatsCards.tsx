@@ -57,14 +57,10 @@ const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisp
             <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">BOX-D disponíveis</span>
           </div>
           <div className="flex flex-wrap gap-1">
-            {Array.from({ length: 32 }, (_, i) => (i + 1).toString()).map((num) => (
+            {boxDDisponiveis.map((num) => (
               <div
                 key={num}
-                className={`text-xs font-mono flex items-center justify-center rounded h-7 w-7 border transition-colors duration-200
-                  ${boxDDisponiveis.includes(num)
-                    ? 'bg-emerald-500 text-white border-emerald-600'
-                    : 'bg-gray-100 text-gray-300 border-gray-200 dark:bg-gray-800 dark:text-gray-700 dark:border-gray-700'}
-                `}
+                className="text-xs font-mono flex items-center justify-center rounded h-7 w-7 border transition-colors duration-200 bg-emerald-500 text-white border-emerald-600"
               >
                 {num}
               </div>
