@@ -131,21 +131,15 @@ const Index = () => {
   const boxDExtras = data
     .map(item => String(item["BOX-D"] || "").trim())
     .filter(boxd => boxd !== "" && !boxDPadrao.includes(boxd))
-    .filter((value, index, self) => self.indexOf(value) === index) // Remove duplicados
-    .sort((a, b) => {
-      const numA = parseInt(a);
-      const numB = parseInt(b);
-      if (!isNaN(numA) && !isNaN(numB)) {
-        return numA - numB;
-      }
-      return a.localeCompare(b);
-    });
+    .filter((value, index, self) => self.indexOf(value) === index); // Remove duplicados
   
   // Lista completa de BOX-D (padrão + extras)
   const todosBoxD = [...boxDPadrao, ...boxDExtras];
   
   // BOX-D disponíveis (não ocupados)
   const boxDDisponiveis = todosBoxD.filter(b => !boxDOcupados.includes(b));
+  
+
 
   const applyFilters = () => {
     let result = [...data];

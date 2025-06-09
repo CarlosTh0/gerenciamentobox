@@ -52,6 +52,10 @@ const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisp
     const boxDPadrao = Array.from({ length: 32 }, (_, i) => (i + 1).toString());
     const boxDExtras = boxDDisponiveis.filter(num => !boxDPadrao.includes(num));
     
+    // Debug - vou ver os dados no console
+    console.log('boxDDisponiveis:', boxDDisponiveis);
+    console.log('boxDExtras:', boxDExtras);
+    
     return (
       <Card className={`bg-gradient-to-br ${gradient} border-none shadow-lg hover:shadow-xl transition-all duration-300`}>
         <CardContent className="p-4">
