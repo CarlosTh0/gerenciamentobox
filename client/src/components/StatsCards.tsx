@@ -48,8 +48,10 @@ interface StatCardProps {
 }
 
 const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisponiveis, small }: StatCardProps) => {
-  if (boxDDisponiveis) {
-    // Mostra todos os BOX-D disponíveis em linha, em ordem crescente
+  if (boxDDisponiveis && Array.isArray(boxDDisponiveis)) {
+    const boxDPadrao = Array.from({ length: 32 }, (_, i) => (i + 1).toString());
+    const boxDExtras = boxDDisponiveis.filter(num => !boxDPadrao.includes(num));
+    
     return (
       <Card className={`bg-gradient-to-br ${gradient} border-none shadow-lg hover:shadow-xl transition-all duration-300`}>
         <CardContent className="p-4">
@@ -57,7 +59,8 @@ const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisp
             <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">BOX-D disponíveis</span>
           </div>
           <div className="flex flex-wrap gap-1">
-            {Array.from({ length: 32 }, (_, i) => (i + 1).toString()).map((num) => (
+            {/* BOX-D padrão (1-32) */}
+            {boxDPadrao.map((num) => (
               <div
                 key={num}
                 className={`text-xs font-mono flex items-center justify-center rounded h-7 w-7 border transition-colors duration-200
@@ -69,8 +72,8 @@ const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisp
                 {num}
               </div>
             ))}
-            {/* BOX-D extras (além dos 32 padrão) */}
-            {boxDDisponiveis.filter(num => !Array.from({ length: 32 }, (_, i) => (i + 1).toString()).includes(num)).map((num) => (
+            {/* BOX-D extras (além dos 32 padrão) em azul */}
+            {boxDExtras.map((num) => (
               <div
                 key={num}
                 className="text-xs font-mono flex items-center justify-center rounded h-7 min-w-7 px-1 border transition-colors duration-200 bg-blue-500 text-white border-blue-600"
@@ -79,6 +82,13 @@ const StatCard = ({ title, value, icon, gradient, iconColor, textColor, boxDDisp
               </div>
             ))}
           </div>
+          {boxDExtras.length > 0 && (
+            <div className="mt-2">
+              <span className="text-xs text-blue-600 dark:text-blue-400">
+                {boxDExtras.length} BOX-D extra{boxDExtras.length > 1 ? 's' : ''} disponível{boxDExtras.length > 1 ? 'eis' : ''}
+              </span>
+            </div>
+          )}
         </CardContent>
       </Card>
     );

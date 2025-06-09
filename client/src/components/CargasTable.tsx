@@ -169,9 +169,18 @@ const TableRow = ({
 
   const validateBoxD = (value: string) => {
     if (value === "") return true;
-    // Aceita qualquer número válido, sem limite fixo
-    const boxDNumber = parseInt(value);
-    return !isNaN(boxDNumber) && boxDNumber > 0;
+    // Aceita qualquer valor alfanumérico válido (números, letras + números como G63, etc.)
+    const trimmedValue = value.trim();
+    if (trimmedValue.length === 0) return false;
+    
+    // Se for só número, deve ser maior que 0
+    const boxDNumber = parseInt(trimmedValue);
+    if (!isNaN(boxDNumber)) {
+      return boxDNumber > 0;
+    }
+    
+    // Se contém letras e números, aceita qualquer combinação válida
+    return /^[A-Za-z0-9]+$/.test(trimmedValue);
   };
 
   const validatePrebox = (value: string) => {
