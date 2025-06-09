@@ -305,7 +305,7 @@ const Index = () => {
         FROTA: "F100",
         PREBOX: "300",
         "BOX-D": "G65",
-        status: "JA_FOI"
+        status: "COMPLETO"
       },
       {
         id: uuidv4(),
@@ -314,7 +314,7 @@ const Index = () => {
         FROTA: "F101",
         PREBOX: "301",
         "BOX-D": "34",
-        status: "JA_FOI"
+        status: "PARCIAL"
       },
       {
         id: uuidv4(),
@@ -323,13 +323,13 @@ const Index = () => {
         FROTA: "F102", 
         PREBOX: "302",
         "BOX-D": "A15",
-        status: "JA_FOI"
+        status: "COMPLETO"
       }
     ];
 
     setData([...data, ...demoData]);
     demoData.forEach(carga => saveAlteracao('criação', carga));
-    toast.success("Dados de demonstração adicionados! BOX-D extras agora visíveis em azul.");
+    toast.success("BOX-D extras ocupados adicionados! Agora aparecem em azul no painel.");
     applyFilters();
   };
 
@@ -480,7 +480,7 @@ const Index = () => {
 
           <FileUploader onUpload={handleFileUpload} />
 
-          <StatsCards stats={stats} boxDDisponiveis={boxDDisponiveis} />
+          <StatsCards stats={stats} boxDDisponiveis={boxDDisponiveis} boxDOcupados={boxDOcupados} />
 
           <ConflictAlert conflicts={conflicts} />
 
