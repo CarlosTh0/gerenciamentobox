@@ -445,18 +445,20 @@ const Index = () => {
 
           <FileUploader onUpload={handleFileUpload} />
 
-          <ViagemSync cargas={data} onUpdateCargas={(updatedCargas) => {
-            setData(updatedCargas);
-            // Salva alterações para cada viagem atualizada
-            updatedCargas.forEach((carga, index) => {
-              if (data[index] && (
-                carga.PREBOX !== data[index].PREBOX || 
-                carga["BOX-D"] !== data[index]["BOX-D"]
-              )) {
-                saveAlteracao('atualização', carga);
-              }
-            });
-          }} />
+          {user?.role === 'admin' && (
+            <ViagemSync cargas={data} onUpdateCargas={(updatedCargas) => {
+              setData(updatedCargas);
+              // Salva alterações para cada viagem atualizada
+              updatedCargas.forEach((carga, index) => {
+                if (data[index] && (
+                  carga.PREBOX !== data[index].PREBOX || 
+                  carga["BOX-D"] !== data[index]["BOX-D"]
+                )) {
+                  saveAlteracao('atualização', carga);
+                }
+              });
+            }} />
+          )}
 
           <StatsCards stats={stats} boxDDisponiveis={boxDDisponiveis} boxDOcupados={boxDOcupados} />
 
