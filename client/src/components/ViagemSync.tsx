@@ -213,21 +213,21 @@ export default function ViagemSync({ cargas, onUpdateCargas }: ViagemSyncProps) 
             <div>
               <span className="text-muted-foreground">Com PREBOX:</span>
               <span className="ml-2 font-medium">
-                {cargas.filter(c => c.PREBOX && c.PREBOX.trim() !== '').length}
+                {cargas.filter(c => typeof c.PREBOX === 'string' && c.PREBOX.trim() !== '').length}
               </span>
             </div>
             <div>
               <span className="text-muted-foreground">Com BOX-D:</span>
               <span className="ml-2 font-medium">
-                {cargas.filter(c => c["BOX-D"] && c["BOX-D"].trim() !== '').length}
+                {cargas.filter(c => typeof c["BOX-D"] === 'string' && c["BOX-D"].trim() !== '').length}
               </span>
             </div>
             <div>
               <span className="text-muted-foreground">Completas:</span>
               <span className="ml-2 font-medium">
                 {cargas.filter(c => 
-                  c.PREBOX && c.PREBOX.trim() !== '' && 
-                  c["BOX-D"] && c["BOX-D"].trim() !== ''
+                  typeof c.PREBOX === 'string' && c.PREBOX.trim() !== '' && 
+                  typeof c["BOX-D"] === 'string' && c["BOX-D"].trim() !== ''
                 ).length}
               </span>
             </div>

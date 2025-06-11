@@ -28,11 +28,7 @@ export default function LoginPage() {
           {error && <div className="text-red-500 text-sm">{error}</div>}
           <Button type="submit" className="w-full">Entrar</Button>
         </form>
-        <div className="mt-4 text-xs text-muted-foreground">
-          <b>Admin:</b> admin@demo.com / admin123<br />
-          <b>Operador:</b> operador@demo.com / operador123<br />
-          <b>Visualizador:</b> visualizador@demo.com / visual123
-        </div>
+        {/* Bloco de usuários removido para segurança */}
       </div>
     </div>
   );

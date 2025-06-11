@@ -90,7 +90,10 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
 
               // Log headers para debug
               if (parsedData.length > 0) {
-                console.log("Colunas disponíveis:", Object.keys(parsedData[0]));
+                const firstRow = parsedData[0];
+                if (firstRow && typeof firstRow === 'object' && !Array.isArray(firstRow)) {
+                  console.log("Colunas disponíveis:", Object.keys(firstRow));
+                }
               }
 
               const processedData = parsedData.map((row: any) => {
@@ -245,7 +248,10 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
 
         // Log headers para debug
         if (parsedData.length > 0) {
-          console.log("Colunas disponíveis:", Object.keys(parsedData[0]));
+          const firstRow = parsedData[0];
+          if (firstRow && typeof firstRow === 'object' && !Array.isArray(firstRow)) {
+            console.log("Colunas disponíveis:", Object.keys(firstRow));
+          }
         }
 
         const viagensSet = new Set();
@@ -334,7 +340,6 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
   return (
     <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
-        {/* Removido Escolher arquivo e Carregar Excel, deixando só Buscar Arquivos Automaticamente */}
         <div className="flex flex-wrap gap-3 w-full sm:w-auto justify-center">
           <Button
             onClick={handleAutomaticFileSearch}
@@ -344,6 +349,26 @@ const FileUploader = ({ onUpload }: FileUploaderProps) => {
             <FolderOpen size={16} />
             {isAutomaticLoading ? "Processando..." : "Buscar Arquivos Automaticamente"}
           </Button>
+          <label htmlFor="excel-upload" className="w-full sm:w-auto">
+            <input
+              id="excel-upload"
+              type="file"
+              accept=".xlsx,.xls"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+              disabled={isLoading || isAutomaticLoading}
+            />
+            <Button
+              asChild
+              className="w-full sm:w-auto flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white shadow-sm"
+              disabled={isLoading || isAutomaticLoading}
+            >
+              <span>
+                <Upload size={16} className="inline mr-1" />
+                {isLoading ? "Importando..." : "Importar Excel"}
+              </span>
+            </Button>
+          </label>
         </div>
       </div>
     </div>

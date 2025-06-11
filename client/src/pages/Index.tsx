@@ -201,19 +201,36 @@ const Index = () => {
   };
 
   const handleFileUpload = (excelData: any[]) => {
+    // Mapeia as cargas existentes por VIAGEM
+    const dataByViagem = new Map(data.map(item => [item.VIAGEM, item]));
+    let atualizadas = 0;
+    let adicionadas = 0;
+
     const processedData = excelData.map(row => {
-      return {
+      const viagem = row.VIAGEM || "";
+      const carga = {
         id: uuidv4(),
         HORA: row.HORA || "",
-        VIAGEM: row.VIAGEM || "",
+        VIAGEM: viagem,
         FROTA: row.FROTA || "",
         PREBOX: row.PREBOX || "",
         "BOX-D": row["BOX-D"] || "",
         status: row.status || "LIVRE"
       };
+      if (dataByViagem.has(viagem)) {
+        atualizadas++;
+      } else {
+        adicionadas++;
+      }
+      return carga;
     });
 
-    setData(processedData);
+    // Substitui cargas existentes pela VIAGEM, adiciona novas
+    const novasViagens = new Set(processedData.map(c => c.VIAGEM));
+    const restantes = data.filter(item => !novasViagens.has(item.VIAGEM));
+    const novaLista = [...restantes, ...processedData];
+    setData(novaLista);
+    toast.success(`Importação concluída! ${adicionadas} novas, ${atualizadas} atualizadas.`);
   };
 
   const updateStats = () => {
@@ -290,7 +307,7 @@ const Index = () => {
       status: "LIVRE"
     };
 
-    setData([...data, newCarga]);
+    setData(prev => [...prev, newCarga]); // Adiciona ao final
     saveAlteracao('criação', newCarga);
     toast.success("Nova carga adicionada!");
     applyFilters(); // Garante atualização do filtro

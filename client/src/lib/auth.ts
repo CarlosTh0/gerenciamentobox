@@ -49,7 +49,13 @@ export function logout() {
 
 export function getCurrentUser(): User | null {
   const user = localStorage.getItem("currentUser");
-  return user ? JSON.parse(user) : null;
+  try {
+    return user ? JSON.parse(user) : null;
+  } catch (e) {
+    // Valor inválido, remove e retorna null
+    localStorage.removeItem("currentUser");
+    return null;
+  }
 }
 
 export function hasPermission(role: UserRole, action: "view" | "edit" | "delete"): boolean {
