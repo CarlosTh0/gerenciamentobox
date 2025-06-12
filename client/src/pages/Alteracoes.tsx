@@ -1,19 +1,17 @@
-
 import { useState, useEffect } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import AlteracoesCard, { Alteracao } from '@/components/AlteracoesCard';
+import { getAlteracoes, clearAlteracoes } from '@/lib/alteracoesApi';
 
 export default function Alteracoes() {
   const [alteracoes, setAlteracoes] = useState<Alteracao[]>([]);
 
   useEffect(() => {
-    const alteracoesFromStorage = localStorage.getItem('alteracoes');
-    if (alteracoesFromStorage) {
-      try {
-        const parsedAlteracoes = JSON.parse(alteracoesFromStorage);
-        const processedAlteracoes = parsedAlteracoes
+    getAlteracoes()
+      .then(alts => {
+        const processedAlteracoes = alts
           .map((a: any) => ({
             ...a,
             timestamp: new Date(a.timestamp)
@@ -22,14 +20,12 @@ export default function Alteracoes() {
             b.timestamp.getTime() - a.timestamp.getTime()
           );
         setAlteracoes(processedAlteracoes);
-      } catch (error) {
-        console.error('Erro ao processar alterações:', error);
-      }
-    }
+      })
+      .catch(() => toast.error('Erro ao carregar alterações do servidor'));
   }, []);
 
-  const handleClearHistory = () => {
-    localStorage.removeItem('alteracoes');
+  const handleClearHistory = async () => {
+    await clearAlteracoes();
     setAlteracoes([]);
     toast.success('Histórico de alterações limpo com sucesso');
   };

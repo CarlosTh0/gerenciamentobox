@@ -16,8 +16,8 @@ import * as XLSX from 'xlsx';
 import { getCurrentUser } from "@/lib/auth";
 import FrotasFila from "@/components/FrotasFila";
 import ViagemSync from "@/components/ViagemSync";
+import { getCargas, createCarga, updateCarga, deleteCarga } from "@/lib/api";
 
-const LOCAL_STORAGE_KEY = 'cargo-management-data';
 const DEFAULT_SYNC_INTERVAL = 600000; // 10 minutos
 
 const Index = () => {
@@ -51,15 +51,8 @@ const Index = () => {
   const tableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (storedData) {
-      try {
-        const parsedData = JSON.parse(storedData);
-        setData(parsedData);
-      } catch (error) {
-        console.error("Erro ao carregar dados do localStorage:", error);
-      }
-    }
+    // Busca cargas do backend na montagem
+    getCargas().then(setData).catch(() => toast.error("Erro ao carregar cargas do servidor"));
   }, []);
 
   useEffect(() => {
@@ -86,29 +79,10 @@ const Index = () => {
     };
   }, [syncInterval]);
 
+  // Remove localStorage, salva apenas no backend
   useEffect(() => {
     updateStats();
     checkConflicts();
-
-    // Salva no localStorage
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
-
-    // Cria backup com timestamp
-    const timestamp = new Date().toISOString();
-    localStorage.setItem(`${LOCAL_STORAGE_KEY}_backup_${timestamp}`, JSON.stringify(data));
-
-    // Mantém apenas os últimos 5 backups
-    const backupKeys = Object.keys(localStorage)
-      .filter(key => key.startsWith(`${LOCAL_STORAGE_KEY}_backup_`))
-      .sort()
-      .reverse();
-
-    backupKeys.slice(5).forEach(key => localStorage.removeItem(key));
-
-    if (data.length > 0) {
-      setLastUpdate(new Date());
-    }
-
     applyFilters();
   }, [data]);
 
@@ -200,16 +174,14 @@ const Index = () => {
     }
   };
 
-  const handleFileUpload = (excelData: any[]) => {
+  const handleFileUpload = async (excelData: any[]) => {
     // Mapeia as cargas existentes por VIAGEM
     const dataByViagem = new Map(data.map(item => [item.VIAGEM, item]));
     let atualizadas = 0;
     let adicionadas = 0;
-
     const processedData = excelData.map(row => {
       const viagem = row.VIAGEM || "";
       const carga = {
-        id: uuidv4(),
         HORA: row.HORA || "",
         VIAGEM: viagem,
         FROTA: row.FROTA || "",
@@ -224,12 +196,20 @@ const Index = () => {
       }
       return carga;
     });
-
     // Substitui cargas existentes pela VIAGEM, adiciona novas
     const novasViagens = new Set(processedData.map(c => c.VIAGEM));
     const restantes = data.filter(item => !novasViagens.has(item.VIAGEM));
-    const novaLista = [...restantes, ...processedData];
-    setData(novaLista);
+    // Persiste cada carga no backend
+    for (const carga of processedData) {
+      const existente = dataByViagem.get(carga.VIAGEM);
+      if (existente) {
+        await updateCarga(existente.id, carga);
+      } else {
+        await createCarga(carga);
+      }
+    }
+    // Atualiza lista
+    getCargas().then(setData);
     toast.success(`Importação concluída! ${adicionadas} novas, ${atualizadas} atualizadas.`);
   };
 
@@ -291,14 +271,12 @@ const Index = () => {
     localStorage.setItem('alteracoes', JSON.stringify(alteracoes));
   };
 
-  const handleAddCarga = () => {
+  const handleAddCarga = async () => {
     const currentTime = new Date().toLocaleTimeString('pt-BR', {
       hour: '2-digit',
       minute: '2-digit'
     });
-
-    const newCarga: CargaItem = {
-      id: uuidv4(),
+    const newCarga = {
       HORA: currentTime,
       VIAGEM: "",
       FROTA: "",
@@ -306,51 +284,36 @@ const Index = () => {
       "BOX-D": "",
       status: "LIVRE"
     };
-
-    setData(prev => [...prev, newCarga]); // Adiciona ao final
-    saveAlteracao('criação', newCarga);
+    await createCarga(newCarga);
+    getCargas().then(setData);
     toast.success("Nova carga adicionada!");
-    applyFilters(); // Garante atualização do filtro
+    applyFilters();
   };
 
-
-
-  const handleUpdateCarga = (index: number, updatedCarga: CargaItem) => {
+  const handleUpdateCarga = async (index: number, updatedCarga: CargaItem) => {
     const dataIndex = data.findIndex(item => item.id === filteredData[index].id);
     if (dataIndex !== -1) {
-      const newData = [...data];
-      newData[dataIndex] = updatedCarga;
-      setData(newData);
-      saveAlteracao('atualização', updatedCarga);
+      await updateCarga(data[dataIndex].id, updatedCarga);
+      getCargas().then(setData);
     }
   };
 
-  const handleDeleteCarga = (index: number) => {
+  const handleDeleteCarga = async (index: number) => {
     const dataIndex = data.findIndex(item => item.id === filteredData[index].id);
     if (dataIndex !== -1) {
-      const deletedCarga = data[dataIndex];
-      const newData = [...data];
-      newData.splice(dataIndex, 1);
-      setData(newData);
-      saveAlteracao('exclusão', deletedCarga);
+      await deleteCarga(data[dataIndex].id);
+      getCargas().then(setData);
     }
   };
 
-  const syncData = () => {
+  const syncData = async () => {
     setIsSyncing(true);
-
     try {
-      const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
-
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-
-        setData(parsedData);
-
-        toast.success("Sincronizado com sucesso", {
-          description: `Dados atualizados em ${new Date().toLocaleTimeString()}`
-        });
-      }
+      const cargas = await getCargas();
+      setData(cargas);
+      toast.success("Sincronizado com sucesso", {
+        description: `Dados atualizados em ${new Date().toLocaleTimeString()}`
+      });
     } catch (error) {
       console.error("Erro ao sincronizar dados:", error);
       toast.error("Erro ao sincronizar dados");
