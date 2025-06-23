@@ -115,7 +115,6 @@ const Index = () => {
   const boxDDisponiveis = todosBoxD.filter(b => !boxDOcupados.includes(b));
   
 
-
   const applyFilters = () => {
     let result = [...data];
 
@@ -181,13 +180,21 @@ const Index = () => {
     let adicionadas = 0;
     const processedData = excelData.map(row => {
       const viagem = row.VIAGEM || "";
-      const carga = {
+      // Corrigido: garantir que o status seja um dos valores válidos
+      let status: "LIVRE" | "COMPLETO" | "PARCIAL" | "JA_FOI" = "LIVRE";
+      const rawStatus = String(row.status || "").toUpperCase();
+      if (["LIVRE", "COMPLETO", "PARCIAL", "JA_FOI"].includes(rawStatus)) {
+        status = rawStatus as "LIVRE" | "COMPLETO" | "PARCIAL" | "JA_FOI";
+      }
+      
+      const carga: CargaItem = {
+        id: uuidv4(),
         HORA: row.HORA || "",
         VIAGEM: viagem,
         FROTA: row.FROTA || "",
         PREBOX: row.PREBOX || "",
         "BOX-D": row["BOX-D"] || "",
-        status: row.status || "LIVRE"
+        status: status
       };
       if (dataByViagem.has(viagem)) {
         atualizadas++;
@@ -203,7 +210,7 @@ const Index = () => {
     for (const carga of processedData) {
       const existente = dataByViagem.get(carga.VIAGEM);
       if (existente) {
-        await updateCarga(existente.id, carga);
+        await updateCarga(existente.id!, carga);
       } else {
         await createCarga(carga);
       }
@@ -276,7 +283,8 @@ const Index = () => {
       hour: '2-digit',
       minute: '2-digit'
     });
-    const newCarga = {
+    const newCarga: CargaItem = {
+      id: uuidv4(),
       HORA: currentTime,
       VIAGEM: "",
       FROTA: "",
@@ -293,7 +301,7 @@ const Index = () => {
   const handleUpdateCarga = async (index: number, updatedCarga: CargaItem) => {
     const dataIndex = data.findIndex(item => item.id === filteredData[index].id);
     if (dataIndex !== -1) {
-      await updateCarga(data[dataIndex].id, updatedCarga);
+      await updateCarga(data[dataIndex].id!, updatedCarga);
       getCargas().then(setData);
     }
   };
@@ -301,7 +309,7 @@ const Index = () => {
   const handleDeleteCarga = async (index: number) => {
     const dataIndex = data.findIndex(item => item.id === filteredData[index].id);
     if (dataIndex !== -1) {
-      await deleteCarga(data[dataIndex].id);
+      await deleteCarga(data[dataIndex].id!);
       getCargas().then(setData);
     }
   };
