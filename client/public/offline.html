@@ -5,55 +5,217 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Offline - Sistema de Gerenciamento de Cargas</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      margin: 0;
       padding: 20px;
       text-align: center;
-      background-color: #f5f5f5;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
     }
-    .card {
+    
+    .container {
       max-width: 500px;
-      padding: 40px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
     }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 16px;
+    
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
       color: #333;
     }
-    p {
-      color: #666;
-      margin-bottom: 24px;
-      line-height: 1.5;
+    
+    .icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      background: #3b82f6;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: white;
     }
+    
+    h1 {
+      font-size: 28px;
+      margin-bottom: 16px;
+      color: #1f2937;
+    }
+    
+    p {
+      color: #6b7280;
+      margin-bottom: 32px;
+      line-height: 1.6;
+      font-size: 16px;
+    }
+    
+    .buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
     button {
       background-color: #3b82f6;
       color: white;
       border: none;
-      padding: 12px 20px;
-      border-radius: 6px;
-      font-weight: 500;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
     }
+    
     button:hover {
       background-color: #2563eb;
+      transform: translateY(-1px);
+    }
+    
+    button.secondary {
+      background-color: #6b7280;
+    }
+    
+    button.secondary:hover {
+      background-color: #4b5563;
+    }
+    
+    .status {
+      margin-top: 24px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .status.checking {
+      background-color: #fef3c7;
+      color: #92400e;
+    }
+    
+    .status.online {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    
+    .status.offline {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+    
+    @media (max-width: 480px) {
+      .card {
+        padding: 24px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      .buttons {
+        flex-direction: column;
+      }
+      
+      button {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Você está offline</h1>
-    <p>Parece que você está sem conexão com a internet. Seus dados foram salvos localmente e serão sincronizados quando você estiver online novamente.</p>
-    <button onclick="window.location.reload()">Tentar novamente</button>
+  <div class="container">
+    <div class="card">
+      <div class="icon">📡</div>
+      <h1>Você está offline</h1>
+      <p>Não foi possível conectar com o servidor. Seus dados foram salvos localmente e serão sincronizados quando a conexão for restabelecida.</p>
+      
+      <div class="buttons">
+        <button onclick="checkConnection()">Verificar Conexão</button>
+        <button class="secondary" onclick="goHome()">Ir para Home</button>
+      </div>
+      
+      <div id="status" class="status offline">
+        Status: Offline
+      </div>
+    </div>
   </div>
+
+  <script>
+    let isChecking = false;
+
+    function updateStatus(status, message) {
+      const statusEl = document.getElementById('status');
+      statusEl.className = `status ${status}`;
+      statusEl.textContent = message;
+    }
+
+    async function checkConnection() {
+      if (isChecking) return;
+      
+      isChecking = true;
+      updateStatus('checking', 'Verificando conexão...');
+      
+      try {
+        const response = await fetch('/', { 
+          method: 'HEAD',
+          cache: 'no-cache'
+        });
+        
+        if (response.ok) {
+          updateStatus('online', 'Conexão restabelecida!');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        } else {
+          throw new Error('Resposta inválida');
+        }
+      } catch (error) {
+        updateStatus('offline', 'Ainda sem conexão');
+      } finally {
+        isChecking = false;
+      }
+    }
+
+    function goHome() {
+      window.location.href = '/';
+    }
+
+    // Verificar conexão automaticamente a cada 30 segundos
+    setInterval(() => {
+      if (!isChecking) {
+        checkConnection();
+      }
+    }, 30000);
+
+    // Verificar quando o usuário voltar para a aba
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && !isChecking) {
+        checkConnection();
+      }
+    });
+
+    // Verificar quando voltar online
+    window.addEventListener('online', () => {
+      checkConnection();
+    });
+  </script>
 </body>
 </html>

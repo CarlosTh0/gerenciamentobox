@@ -2,15 +2,54 @@
 {
   "name": "Sistema de Gerenciamento de Cargas",
   "short_name": "Cargas",
+  "description": "Sistema completo para gerenciamento de cargas e agendamentos",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#3b82f6",
+  "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["business", "productivity"],
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32 48x48",
       "type": "image/x-icon"
+    },
+    {
+      "src": "/favicon.svg", 
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Acesso rápido ao dashboard",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
+        }
+      ]
+    },
+    {
+      "name": "Rampas",
+      "short_name": "Rampas", 
+      "description": "Gerenciar rampas de carregamento",
+      "url": "/rampas",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "any", 
+          "type": "image/svg+xml"
+        }
+      ]
+    }
+  ]
 }
